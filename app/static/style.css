@@ -1024,3 +1024,6 @@ table.full-width .empty {
   filter: brightness(0.97);
   transition: 0.2s ease;
 }
+media(max-width: 1200px) {
+.masonry {width:100%;flex-direction:column}
+}
