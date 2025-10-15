@@ -964,6 +964,7 @@ table.full-width .empty {
     flex-direction: column;
     width:100%;
   }
+  
   .masonry .col {width:100%;flex:1}
 }
 /* === Reduce Invest Section === */
