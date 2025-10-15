@@ -1021,11 +1021,10 @@ table.full-width .empty {
   transition: 0.2s ease;
 }
 @media (max-width: 1100px) {
-  .container {grid-template-columns: 1fr}
-  .masonry {
+  .container .masonry {
     flex-direction: column !important;
     width:100%;
   }
-
+  
   .masonry .col {width:100%;flex:1}
 }
