@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Crypto Dashboard (Realtime IDR)</h2>
+<table>
+  <tr>
+    <th>Koin</th>
+    <th>Harga (IDR)</th>
+  </tr>
+  {% for coin, price in data.items() %}
+  <tr>
+    <td>{{ coin }}</td>
+    <td>{{ price | fmt }}</td>
+  </tr>
+  {% endfor %}
+</table>
+<p style="margin-top:20px;font-size:0.9rem;color:#777;">Data berdasarkan API CoinGecko, diperbarui saat halaman dimuat.</p>
+{% endblock %}

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>📜 Rekap Bulanan — BUKABOX</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='layout.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+      background: #fafafa;
+      margin: 0;
+      color: #333;
+    }
+
+    header {
+      background: linear-gradient(90deg, #A5C8E4, #B8E4C9);
+      color: #fff;
+      text-align: center;
+      padding: 20px 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.6em;
+      letter-spacing: 0.5px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    table.history-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+    }
+
+    th {
+      background: #f3f4f6;
+      border-bottom: 1px solid #ddd;
+    }
+
+    td {
+      border-bottom: 1px solid #eee;
+    }
+
+    tr:hover {
+      background: #f9fafb;
+    }
+
+    a {
+      text-decoration: none;
+      color: #3b82f6;
+      font-weight: 500;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      text-align: center;
+      color: #777;
+      font-size: 0.9em;
+      padding: 30px 0;
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 60px;
+      color: #666;
+      font-size: 1.1em;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.9em;
+      font-weight: 600;
+      text-decoration: none;
+      margin-right: 6px;
+    }
+
+    .btn-detail { background: #92B6E8; color: #fff; }
+    .btn-detail:hover { background: #7fa5da; }
+
+    .btn-pdf { background: #B8E4C9; color: #333; }
+    .btn-pdf:hover { background: #9cd6b4; }
+
+    .btn-snapshot {
+      display: inline-block;
+      padding: 10px 16px;
+      background: #F4C7B8;
+      color: #333;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .btn-snapshot:hover { background: #f3b6a4; }
+
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📜 Rekap Bulanan — BUKABOX</h1>
+</header>
+
+<div class="container">
+  <a href="{{ url_for('save_month_snapshot') }}" class="btn-snapshot">📦 Simpan Rekap Bulan Aktif</a>
+
+  {% if histories %}
+  <table class="history-table">
+    <thead>
+      <tr>
+        <th>Bulan</th>
+        <th>Income</th>
+        <th>Expense</th>
+        <th>Investment</th>
+        <th>Buffer</th>
+        <th style="width:160px;">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+  {% for h in histories %}
+    {# — Normalisasi supaya aman untuk 2 bentuk data — #}
+    {% set sum = h.summary if h.summary is defined else
+                 {'income': (h.total_income or 0) if h.total_income is defined else 0,
+                  'expense': (h.total_expense or 0) if h.total_expense is defined else 0,
+                  'investment': (h.total_investment or 0) if h.total_investment is defined else 0} %}
+    {% set buffer_val = (sum.income or 0) - ((sum.expense or 0) + (sum.investment or 0)) %}
+
+    <tr>
+      <td><b>{{ h.month }}</b></td>
+      <td>{{ sum.income | idr }}</td>
+      <td>{{ sum.expense | idr }}</td>
+      <td>{{ sum.investment | idr }}</td>
+      <td>
+        <span style="color:{{ '#d33f3f' if buffer_val < 0 else '#1b9e5a' }};">
+          {{ buffer_val | idr }}
+        </span>
+      </td>
+      <td>
+        <a href="{{ url_for('history_detail', month=h.month) }}" class="btn btn-detail">Detail</a>
+        <a href="{{ url_for('export_history_pdf', month=h.month) }}" class="btn btn-pdf">PDF</a>
+      </td>
+    </tr>
+  {% endfor %}
+</tbody>
+
+  </table>
+  {% else %}
+  <div class="no-data">
+    📭 <b>Belum ada data rekap bulanan tersimpan</b><br><br>
+    Rekap akan muncul otomatis setelah kamu menutup bulan aktif di dasbor utama.
+  </div>
+  {% endif %}
+</div>
+
+<footer>
+  <p>BUKABOX — Financial Intelligence Dashboard v4.3</p>
+</footer>
+
+</body>
+</html>

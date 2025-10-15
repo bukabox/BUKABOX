@@ -1,0 +1,1026 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+:root {
+  --blue: #A5C8E4;
+  --mint: #B8E4C9;
+  --peach: #F4C7B8;
+  --lavender: #D7BCE8;
+  --gold: #FCE0A2;
+  --bg: #F9F9F9;
+  --text: #333;
+  --shadow: 0 2px 8px rgba(0,0,0,0.06);
+  --color-line:     #9be2a8; /* LINE pastel green */
+  --color-youtube:  #f6a5a5; /* YouTube pastel red */
+  --color-etsy:     #f5c799; /* Etsy pastel orange */
+  --color-freelance:#b6d5f0; /* Freelance / Design pastel blue */
+  --color-default:  #d1d5db; /* fallback gray */
+}
+.crypto-table tr:nth-child(even){background:#e8f9f0;}
+.gold-table tr:nth-child(even){background:#fff9e6;}
+.land-table tr:nth-child(even){background:#f7f4ff;}
+.business-table tr:nth-child(even){background:#fff0f0;}
+.stock-table tr:nth-child(even){background:#e8f0ff;}
+
+/* Chart legend dots */
+.chart-legend li span {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  margin-right: 6px;
+}
+
+/* Sesuaikan warna label legend otomatis */
+.chart-legend li[data-label*="LINE"] span    { background-color: var(--color-line); }
+.chart-legend li[data-label*="YouTube"] span { background-color: var(--color-youtube); }
+.chart-legend li[data-label*="Etsy"] span    { background-color: var(--color-etsy); }
+.chart-legend li[data-label*="Design"] span  { background-color: var(--color-freelance); }
+
+* { box-sizing: border-box; }
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ===== HEADER STYLE ===== */
+header {
+  text-align: center;
+  padding: 20px 0 10px;
+  border-bottom: 2px solid #eee;
+}
+
+header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  color: #222;
+}
+
+/* ===== NAVIGATION TABS ===== */
+header nav {
+  display: inline-flex;
+  gap: 14px;
+  background: #f7f7f7;
+  border-radius: 8px;
+  padding: 6px 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+header nav a {
+  text-decoration: none;
+  font-weight: 600;
+  color: #555;
+  background: #fff;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+header nav a:hover {
+  background: #e9f3ff;
+  border-color: #c1dcff;
+  color: #1a66d4;
+}
+
+header nav a.active {
+  background: #1a66d4;
+  color: #fff;
+  border-color: #1a66d4;
+  box-shadow: 0 2px 6px rgba(26,102,212,0.2);
+}
+
+/* Emoji icons look aligned */
+header nav a span {
+  vertical-align: middle;
+}
+
+/* Date below header */
+header p {
+  font-size: 13px;
+  margin-top: 6px;
+  color: #777;
+}
+
+
+/* â”€â”€â”€â”€â”€ Section Base â”€â”€â”€â”€â”€ */
+section {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  background: #fff;
+  box-shadow: var(--shadow);
+  padding: 24px;
+  border-radius: 16px;
+  align-items: flex-start;
+}
+section h2 { margin-top: 0; }
+.left, .right { flex: 1; }
+
+/* â”€â”€â”€â”€â”€ Chart styling â”€â”€â”€â”€â”€ */
+canvas {
+  width: 100% !important;
+  height: 300px !important;
+}
+#investChart {
+  width: 100% !important;
+  max-width: 340px;
+  height: auto !important;
+  margin: auto;
+  transition: transform 0.3s ease;
+}
+#investChart:hover { transform: scale(1.06); }
+#invest-overview { align-items: center; }
+
+/* â”€â”€â”€â”€â”€ Tables â”€â”€â”€â”€â”€ */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 0.92rem;
+}
+th, td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+}
+th { color: #444; background: #f8f8f8; }
+tr:hover td { background: #fafafa; }
+#invest-overview td {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#invest-overview tr:hover td {
+  background: var(--mint);
+  color: #222;
+}
+
+/* clickable numeric cells */
+.clickable {
+  cursor: pointer;
+  color: #1b6b5d;
+  font-weight: 500;
+  transition: color 0.2s, transform 0.2s;
+}
+.clickable:hover {
+  color: #0d9a80;
+  transform: scale(1.05);
+}
+
+/* â”€â”€â”€â”€â”€ Form Styling â”€â”€â”€â”€â”€ */
+form { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+input, button {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+input:focus { outline: 2px solid var(--blue); border-color: var(--blue); }
+button {
+  cursor: pointer;
+  background: var(--mint);
+  border: none;
+  transition: all .2s;
+  font-weight: 500;
+}
+button:hover { background: var(--blue); color: #fff; }
+.cancel-btn {
+  background: #ffe8e8;
+  border: 1px solid #ffbcbc;
+  color: #c62828;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.cancel-btn:hover {
+  background: #ffcccc;
+}
+
+/* â”€â”€â”€â”€â”€ Cashflow Section â”€â”€â”€â”€â”€ */
+.cash-block {
+  background: #fafafa;
+  padding: 12px 16px;
+  margin: 10px 0;
+  border-radius: 8px;
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.05);
+}
+.cash-block h3 { margin: 0 0 6px; font-size: 1rem; color: #333; }
+.cash-block button {
+  margin-bottom: 8px;
+  background: var(--peach);
+}
+.cash-block button:hover { background: var(--lavender); }
+
+/* Detail dropdown animation */
+.detail-box {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s;
+  opacity: 0;
+}
+.detail-box.open {
+  max-height: 500px;
+  opacity: 1;
+}
+.detail-box form, .detail-box ul { margin: 6px 0; font-size: 0.9rem; width: 100%; }
+.detail-box ul { list-style: none; padding: 0; margin: 0; }
+.detail-box li { margin-bottom: 4px; }
+
+/* â”€â”€â”€â”€â”€ Tabs & Section 4 â”€â”€â”€â”€â”€ */
+.full-section {
+  flex-direction: column;
+  gap: 24px;
+}
+.full-section h2 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.tab-content.full {
+  width: 100%;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+  display: none;
+}
+.tab-content.full.active {
+  display: block;
+  animation: fadeIn 0.5s ease;
+}
+.tab-content.full h3 {
+  margin-top: 0;
+  font-size: 1.1rem;
+  color: #222;
+}
+.tab-content.full form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.tab-content.full input {
+  flex: 1 1 180px;
+  min-width: 160px;
+}
+.tab-content.full button {
+  flex: 0 0 120px;
+  background: var(--mint);
+  font-weight: 600;
+}
+.tab-content.full button:hover {
+  background: var(--blue);
+  color: white;
+}
+.tab-content.full table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tab-content.full th {
+  background: #f7f9fa;
+  font-weight: 600;
+  padding: 10px;
+}
+.tab-content.full td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+}
+.tab-content.full tr:hover td {
+  background: #f9f9f9;
+}
+
+/* â”€â”€â”€â”€â”€ Animation / global polish â”€â”€â”€â”€â”€ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+html { scroll-behavior: smooth; }
+.chartjs-render-monitor { image-rendering: -webkit-optimize-contrast; }
+/* memastikan chart 1 dan 2 bulat sempurna */
+#incomeChart, #cashflowChart {
+  width: 100% !important;
+  max-width: 320px;
+  height: auto !important;
+  margin: auto;
+  display: block;
+}
+
+footer {
+  text-align: center;
+  padding: 24px;
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 40px;
+  background: #fff;
+  border-top: 1px solid #eee;
+}
+/* ====== GRID LAYOUT RESPONSIVE ====== */
+.container {
+  display: grid;
+  grid-template-columns: 1fr; /* default: satu kolom */
+  gap: 30px;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Mode desktop besar: dua kolom kiri-kanan */
+@media screen and (min-width: 1200px) {
+  .container {
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: min-content;
+    align-items: start;
+  }
+
+  /* Section group kiri dan kanan */
+  #cashflow,
+  #emergency-fund {
+    grid-column: 1;
+  }
+
+  #invest-overview,
+  #asset-detail {
+    grid-column: 2;
+  }
+}
+
+/* ====== TAMPILAN SETIAP BLOK ====== */
+section {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+  padding: 20px;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+/* Supaya chart bulat sempurna */
+canvas {
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+}
+
+/* Bagian buffer tambahan */
+#buffer-section {
+  background: #f9fafc;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  grid-column: 1 / span 2;
+}
+.container > section {
+  width: 100%;
+  box-sizing: border-box;
+}
+/* ====== LAYOUT GRID RESPONSIVE (versi sejajar) ====== */
+.container {
+  display: grid;
+  grid-template-columns: 1fr; /* default mobile */
+  gap: 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Desktop 2 kolom */
+@media screen and (min-width: 1200px) {
+  .container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    align-items: start;
+  }
+
+  /* Kolom kiri */
+  #cashflow,
+  #emergency-fund {
+    grid-column: 1;
+  }
+
+  /* Kolom kanan */
+  #invest-overview,
+  #asset-detail {
+    grid-column: 2;
+  }
+
+  /* Pastikan tinggi sejajar */
+  #cashflow,
+  #emergency-fund,
+  #invest-overview,
+  #asset-detail {
+    align-self: start;
+    height: auto;
+    min-height: 420px; /* biar stabil */
+  }
+}
+
+/* ====== SETIAP BLOK ====== */
+section {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+  padding: 20px;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+/* ====== CHART FIX ====== */
+canvas {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1;
+  display: block;
+}
+
+/* ====== BUFFER / DANA DARURAT ====== */
+#emergency-fund {
+  background: #f9fafc;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+/* Spasi antar bagian */
+#cashflow {position:relative}
+#cashflow, #invest-overview {
+  margin-top: 10px;
+}
+/* ===== Layout Dana Darurat: Vertikal ===== */
+#emergency-fund {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#emergency-fund h3 {
+  margin-bottom: 8px;
+}
+
+#emergency-fund form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+#emergency-fund form input,
+#emergency-fund form textarea,
+#emergency-fund form button {
+  flex: 1 1 100%;
+  max-width: 260px;
+}
+
+/* Progress bar container â€” vertikal urut bawah form */
+.emergency-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.emergency-progress .target {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.emergency-progress progress {
+  width: 100%;
+  height: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+/* ===== Force Full Width for Emergency Fund Progress Bar ===== */
+#emergency-fund .emergency-progress progress {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 1 1 100%;
+  box-sizing: border-box;
+}
+#emergency-fund .bar-block {flex:100%;width:100%}
+.emergency-summary {width:100%}
+/* ====== GRID LAYOUT FINAL v4.4 ====== */
+.container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+/* === Progress Bar Dana Darurat === */
+.progress-container {
+  width: 100%;
+  background: #f3f3f3;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 14px;
+  margin: 8px 0 14px 0;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 100%;
+  background: #ddd;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  text-align: right;
+  padding-right: 8px;
+  color: #fff;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #6fbf73 0%, #2b9348 100%);
+  transition: width 0.6s ease;
+}
+
+/* === Cashflow Section === */
+#cashflow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  align-items: start;
+  margin-top: 20px;
+}
+
+.cash-block {
+  background: #f9f9f9;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.cash-block h3 {
+  margin: 0;
+  font-size: 1.1em;
+}
+
+.toggle-btn {
+  margin-top: 6px;
+  background: #A5C8E4;
+  border: none;
+  color: white;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.detail-box {
+  margin-top: 10px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.cancel-form {
+  margin-top: 8px;
+}
+
+.list-expense li {
+  list-style: none;
+  margin: 4px 0;
+}
+
+.summary-box.buffer {
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: #E3F2E1;
+  border: 2px solid #B8E4C9;
+  border-radius: 10px;
+  font-weight: 600;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.summary-box.buffer .positive {
+  color: #2E7D32;
+}
+.summary-box.buffer .negative {
+  color: #C62828;
+}
+
+.buffer-progress {
+  width: 100%;
+  height: 10px;
+  background: #f0f0f0;
+  border-radius: 5px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.buffer-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #B8E4C9, #A5C8E4);
+  transition: width 0.5s ease;
+}
+
+@media(max-width: 900px) {
+  #cashflow {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Desktop: dua kolom */
+@media screen and (min-width: 1200px) {
+  .container {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "income-overview invest-overview"
+      "cashflow emergency-fund"
+      "cashflow asset-detail";
+    grid-auto-rows: minmax(200px, auto);
+    gap: 24px;
+    align-items: start;
+  }
+  #income-overview {flex-direction:column}
+  #incomeChart {min-width:350px}
+  .block-chart {display:flex}
+  /* Mapping posisi */
+  #income-overview { grid-area: income-overview; }
+  #cashflow        { grid-area: cashflow; }
+  #invest-overview { grid-area: invest-overview; }
+  #emergency-fund  { grid-area: emergency-fund; }
+  #asset-detail    { grid-area: asset-detail; }
+
+  section {
+    align-self: start;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Dana darurat tampil lebih gepeng */
+  #emergency-fund {
+    min-height: 180px;
+    background: #f9fafc;
+    border-radius: 12px;
+    padding: 20px;
+  }
+}
+
+/* Mobile: urut vertikal */
+@media screen and (max-width: 1199px) {
+  .container {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "income-overview"
+      "cashflow"
+      "invest-overview"
+      "emergency-fund"
+      "asset-detail";
+  }
+}
+/* section 4 full width */
+.full-section {
+  grid-column: 1 / -1;  /* span dua kolom penuh */
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* Keep the mapping explicit */
+  #asset-detail { grid-area: asset-detail; }
+
+
+/* Safety: if any earlier grid-area still wins, force the span */
+@media (min-width: 1200px) {
+  #asset-detail.full-section {
+    grid-column: 1 / -1 !important;   /* spans across both columns */
+  }
+}
+.accum-table {
+  margin-top: 10px;
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.95em;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+.accum-table th {
+  background: #B8E4C9;
+  color: #333;
+  font-weight: 600;
+  padding: 8px;
+}
+.accum-table td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+.accum-table tr:nth-child(even) { background: #f9f9f9; }
+.accum-table tr:hover { background: #f0f7f4; }
+.crypto-progress {
+  width: 100%;
+  height: 10px;
+  background: #f0f0f0;
+  border-radius: 5px;
+  margin: 6px 0 15px 0;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+.crypto-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #A5C8E4, #B8E4C9);
+  transition: width 0.5s ease;
+}
+
+.accum-table td.pos { color: #2E7D32; font-weight: 600; }
+.accum-table td.neg { color: #C62828; font-weight: 600; }
+.cancel-btn {
+  background: #e57373;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.cancel-btn:hover {
+  background: #d32f2f;
+}
+.full-width {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.emergency-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.emergency-table th, .emergency-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.emergency-table tr.negative td {
+  color: #C94C4C;
+}
+
+.emergency-table tr.positive td {
+  color: #4A9E5D;
+}
+
+.btn-green {
+  background: #A6D8A8;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+
+.btn-red {
+  background: #E67C73;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+.expense-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 14px;
+}
+.expense-table th, .expense-table td {
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+  text-align: left;
+}
+.expense-table th {
+  background: #f8f8f8;
+  font-weight: 600;
+}
+.expense-table tr:nth-child(even) {
+  background: #fafafa;
+}
+.expense-table td:nth-child(3) {
+  text-align: right;
+}
+.expense-box {
+  grid-column: 1 / -1;  /* biar full width di bawah seluruh section */
+  margin-top: 15px;
+  display: none;
+}
+.expense-box.open {
+  display: block;
+  position:relative;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(-5px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+.positive { color:#2e7d32; font-weight:600; }
+.negative { color:#c62828; font-weight:600; }
+.section-block {
+  margin-top: 40px;
+}
+.section-block h2 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+table.full-width {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+table.full-width th {
+  background: #f6f8fa;
+  text-align: left;
+  padding: 8px 10px;
+}
+table.full-width td {
+  border-top: 1px solid #e0e0e0;
+  padding: 8px 10px;
+}
+table.full-width .empty {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+}
+/* Khusus halaman Investment */
+.page-investment .container {
+  display: block !important;
+  padding-top: 0 !important;
+  margin-top: 50px !important;
+}
+
+.page-investment #asset-detail {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Jika masih tersisa grid atau flex layout dari global */
+.page-investment section {
+  display: block !important;
+  grid-template-columns: none !important;
+  gap: 0 !important;
+}
+
+.page-investment .left,
+.page-investment .right {
+  width: 100% !important;
+  display: block !important;
+}
+.page-investment .invest_chart {
+  display:flex !Important;
+  max-width:1560px;
+  margin:0 auto;
+  padding:0 20px;
+  box-sizing:border-box;
+}
+/* === PAGINATION STYLE === */
+#pagination {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end; /* kanan */
+  align-items: center;
+  gap: 6px;
+  padding: 6px 4px;
+}
+
+.page-btn {
+  flex: 0 0 40px !important;
+  background: #f4f4f4;
+  border: 1px solid #d1d1d1;
+  color: #333;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  min-width: 30px;
+  transition: all 0.2s ease;
+}
+
+.page-btn:hover {
+  background: #e6e6e6;
+  transform: translateY(-1px);
+}
+
+.page-btn.active {
+  background: #2b7a78;
+  color: white;
+  border-color: #2b7a78;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.masonry {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.masonry .col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Card default (buat tampilan seragam) */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+@media (max-width: 1000px) {
+  .masonry {
+    flex-direction: column;
+  }
+}
+/* === Reduce Invest Section === */
+.reduce-title,
+.reduce-subtitle,
+.reduce-label {
+  color: #c0392b;           /* merah tua elegan */
+  font-weight: 600;
+}
+
+.reduce-form input,
+.reduce-form select {
+  border: 1px solid #e74c3c;
+  color: #b30000;
+}
+
+.btn-reduce {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+.btn-reduce:hover {
+  background: #c0392b;
+}
+
+.reduce-table th {
+  background: #ffe5e5;
+  color: #a30000;
+}
+
+.reduce-table td {
+  color: #a30000;
+}
+/* === Crypto Accumulation pastel tone === */
+.accum-table tr.profit td {
+  background-color: #e9f7ef;   /* hijau pastel lembut */
+  color: #1e8449;              /* hijau teks */
+  font-weight: 500;
+}
+
+.accum-table tr.loss td {
+  background-color: #fdecea;   /* merah pastel lembut */
+  color: #c0392b;              /* merah teks */
+  font-weight: 500;
+}
+
+.accum-table tr.neutral td {
+  background-color: #f8f9f9;   /* abu lembut */
+  color: #616a6b;
+}
+
+/* efek hover lembut */
+.accum-table tr:hover td {
+  filter: brightness(0.97);
+  transition: 0.2s ease;
+}

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Rekap Bulanan {{ month }} — BUKABOX</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { background:#fafafa; font-family:"Inter", sans-serif; margin:0; color:#333; }
+    header { text-align:center; padding:30px 0; background:linear-gradient(90deg,#A5C8E4,#B8E4C9); color:#fff; }
+    header h1 { margin:0; font-size:1.6em; }
+
+    .container { max-width:1100px; margin:40px auto; padding:0 20px; }
+    
+    .summary-box { display:flex; flex-wrap:wrap; justify-content:center; gap:20px; margin-bottom:30px; }
+    .summary-card {
+      background:white; border-radius:12px; padding:20px 30px; flex:1; min-width:220px;
+      text-align:center; box-shadow:0 2px 6px rgba(0,0,0,0.08);
+    }
+    .summary-card h3 { margin:0; color:#555; font-size:1.1em; }
+    .summary-card p { margin-top:8px; font-size:1.1em; font-weight:600; }
+
+    .chart-wrap {
+      display:flex; justify-content:center; gap:60px; flex-wrap:wrap; margin:40px 0;
+    }
+    canvas { width:300px !important; height:300px !important; }
+
+    h2 { margin-top:50px; color:#333; }
+
+    table {
+      width:100%; border-collapse:collapse; background:white; margin-top:12px;
+      border-radius:10px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.05);
+    }
+    th, td { padding:10px 14px; border-bottom:1px solid #eee; text-align:left; }
+    th { background:#f4f4f4; color:#444; }
+    tr:hover { background:#f9fafb; }
+
+    .btn {
+      display:inline-block; padding:10px 20px; border-radius:8px; font-weight:600;
+      text-decoration:none; transition:0.2s ease; box-shadow:0 2px 5px rgba(0,0,0,0.1);
+    }
+    .btn-primary { background:#92B6E8; color:#fff; }
+    .btn-primary:hover { background:#7fa5da; }
+    .btn-back { background:#B8E4C9; color:#333; margin-left:10px; }
+    .btn-back:hover { background:#9cd6b4; }
+
+    footer { text-align:center; padding:40px 0; color:#888; font-size:0.9em; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📅 Rekap Bulanan — {{ month }}</h1>
+</header>
+
+<div class="container">
+
+  <!-- ====== Summary Cards ====== -->
+  {% set buffer = summary.income - (summary.expense + summary.investment) %}
+  <div class="summary-box">
+    <div class="summary-card"><h3>Income</h3><p>{{ summary.income | idr }}</p></div>
+    <div class="summary-card"><h3>Expense</h3><p>{{ summary.expense | idr }}</p></div>
+    <div class="summary-card"><h3>Investment</h3><p>{{ summary.investment | idr }}</p></div>
+    <div class="summary-card">
+      <h3>Buffer</h3>
+      <p style="color:{{ '#d33f3f' if buffer < 0 else '#1b9e5a' }};">{{ buffer | idr }}</p>
+    </div>
+  </div>
+
+  <!-- ====== Charts ====== -->
+  <div class="chart-wrap">
+    <div>
+      <canvas id="cashChart"></canvas>
+      <p style="text-align:center;font-weight:500;">Distribusi Cashflow</p>
+    </div>
+    <div>
+      <canvas id="investChart"></canvas>
+      <p style="text-align:center;font-weight:500;">Distribusi Investasi</p>
+    </div>
+  </div>
+
+  <!-- ====== Income Table ====== -->
+  <h2>📊 Pendapatan</h2>
+  <table>
+    <tr><th>Tanggal</th><th>Stream</th><th>Jumlah</th><th>Catatan</th></tr>
+    {% for e in entries.income %}
+    <tr>
+      <td>{{ e.date }}</td>
+      <td>{{ e.stream }}</td>
+      <td>{{ e.amount | idr }}</td>
+      <td>{{ e.note }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <!-- ====== Expense Table ====== -->
+  <h2>💸 Pengeluaran</h2>
+  <table>
+    <tr><th>Tanggal</th><th>Kategori</th><th>Jumlah</th><th>Catatan</th></tr>
+    {% for c in entries.expense %}
+    <tr>
+      <td>{{ c.date }}</td>
+      <td>{{ c.category }}</td>
+      <td>{{ c.amount | idr }}</td>
+      <td>{{ c.note }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <!-- ====== Investment Table ====== -->
+  <h2>💼 Investasi</h2>
+  <table>
+    <tr><th>Kategori</th><th>Aset</th><th>Nominal</th><th>Catatan</th></tr>
+    {% for i in entries.investment %}
+    <tr>
+      <td>{{ i.category }}</td>
+      <td>{{ i.asset }}</td>
+      <td>{{ i.amount_idr | idr }}</td>
+      <td>{{ i.note }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+<!-- ====== Portfolio Snapshot (Dari Data Bulanan) ====== -->
+<h2>📊 Portfolio Investasi Bulanan</h2>
+
+<!-- Bagian Crypto Accumulation -->
+{% if crypto_accumulation and crypto_accumulation|length > 0 %}
+  <table class="accum-table">
+    <tr>
+      <th>Token</th>
+      <th>Total Modal (Rp)</th>
+      <th>Total Koin</th>
+      <th>Average Price</th>
+      <th>Realtime Value</th>
+      <th>PNL (%)</th>
+    </tr>
+    {% for t in crypto_accumulation %}
+      <tr>
+        <td>{{ t.token }}</td>
+        <td>{{ t.total_modal | idr }}</td>
+        <td>{{ "%.6f"|format(t.total_koin) }}</td>
+        <td>{{ t.avg_price | idr }}</td>
+        <td>{{ t.current_value | idr }}</td>
+        <td style="color: {% if t.pnl < 0 %}red{% else %}green{% endif %};">
+          {{ "%.2f"|format(t.pnl) }}%
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{% else %}
+  <p style="color:#777; margin-bottom:20px;">
+    Tidak ada data akumulasi crypto tersimpan untuk bulan ini.
+  </p>
+{% endif %}
+
+<!-- Pemisah visual -->
+<hr style="margin: 30px 0; opacity: 0.3;">
+
+<!-- Bagian Investasi Lainnya -->
+<h3>💼 Investasi Lainnya</h3>
+
+{% set inv_data = entries.investment if entries.investment is defined else entries %}
+{% set filtered_investments = [] %}
+
+{% for inv in inv_data %}
+  {% if inv.category not in ['crypto'] %}
+    {% set _ = filtered_investments.append(inv) %}
+  {% endif %}
+{% endfor %}
+
+{% if filtered_investments and filtered_investments|length > 0 %}
+  <div style="overflow-x:auto; display:flex; justify-content:center;">
+    <table style="min-width:80%; max-width:100%; border-collapse:collapse;">
+      <thead>
+        <tr style="background:#f8f8f8;">
+          <th>Kategori</th>
+          <th>Aset</th>
+          <th>Modal (Rp)</th>
+          <th>Nilai Saat Snapshot</th>
+          <th>PNL (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inv in filtered_investments %}
+        <tr>
+          <td>{{ inv.category }}</td>
+          <td>{{ inv.asset or inv.get("type","") }}</td>
+          <td>{{ inv.amount_idr | idr }}</td>
+          <td>{{ inv.current_value | idr if inv.current_value else "-" }}</td>
+          <td>{{ "%.2f"|format(inv.pnl or 0) if inv.pnl is defined else "-" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p style="color:#777;">Tidak ada data investasi non-crypto tersimpan untuk bulan ini.</p>
+{% endif %}
+
+<!-- Tombol bawah -->
+<div style="margin-top: 40px; text-align:center;">
+  <a href="{{ url_for('export_history_pdf', month=month) }}" class="btn" style="margin-right:10px;">📄 Unduh PDF</a>
+  <a href="{{ url_for('index') }}" class="btn" style="background:#88c999;">⬅️ Kembali</a>
+</div>
+
+</div>
+
+<footer>
+  <p>BUKABOX — Financial Intelligence Dashboard v4.3</p>
+</footer>
+
+<!-- ====== Charts Script ====== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const summary = {{ summary|tojson }};
+const totalIncome = summary.income || 0;
+const totalExpense = summary.expense || 0;
+const totalInvest = summary.investment || 0;
+
+new Chart(document.getElementById("cashChart"), {
+  type: "doughnut",
+  data: {
+    labels: ["Income","Expense","Investment"],
+    datasets: [{
+      data: [totalIncome,totalExpense,totalInvest],
+      backgroundColor: ["#A5C8E4","#F4C7B8","#B8E4C9"],
+      borderWidth: 0,
+      hoverOffset: 12
+    }]
+  },
+  options: {
+    cutout: "60%",
+    plugins: { legend: { position:"bottom" } },
+    responsive: true,
+    maintainAspectRatio: true
+  }
+});
+
+new Chart(document.getElementById("investChart"), {
+  type: "pie",
+  data: {
+    labels: ["Investment","Buffer"],
+    datasets: [{
+      data: [totalInvest, totalIncome - (totalExpense + totalInvest)],
+      backgroundColor: ["#B8E4C9","#e4e4e4"]
+    }]
+  },
+  options: {
+    plugins: { legend: { position:"bottom" } },
+    responsive: true,
+    maintainAspectRatio: true
+  }
+});
+</script>
+
+</body>
+</html>

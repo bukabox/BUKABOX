@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>BUKABOX — Investment & Portfolio Dashboard</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="page-investment">
+
+<header>
+  <h1>BUKABOX — Investment & Portfolio</h1>
+  <nav>
+  <a href="{{ url_for('index') }}">🏠 Dashboard</a>
+  <a href="{{ url_for('investment_panel') }}" class="active">💹 Investment</a>
+</nav>
+  <p>{{ today }}</p>
+</header>
+
+<div class="container">
+  <!-- SECTION – ASSET DETAIL -->
+  <section id="asset-detail" class="full-section">
+    <h2>Investment Portfolio Details</h2>
+
+    <!-- CRYPTO -->
+    <div id="crypto-detail" class="tab-content full active">
+      <h3>Crypto Assets</h3>
+
+      <form method="post" action="{{ url_for('add_invest') }}">
+        <input type="hidden" name="category" value="crypto">
+        <input type="text" name="asset" placeholder="Token (BTC, ETH, dll)">
+        <input type="date" name="date" value="{{ today }}">
+        <input type="text" name="amount" class="money" autocomplete="off" placeholder="Jumlah Modal (IDR)">
+        <input type="text" name="entry_price" class="money" autocomplete="off" placeholder="Harga Beli (IDR)">
+        <input type="text" name="entry_amount" class="money" autocomplete="off" placeholder="Jumlah Koin">
+        <input type="text" name="note" placeholder="Catatan (misal operasional/anak)">
+        <button type="submit">Tambah</button>
+      </form>
+
+      <table>
+        <tr>
+          <th>Tanggal</th>
+          <th>Asset</th>
+          <th>Amount (Rp)</th>
+          <th>Harga Entry</th>
+          <th>Koin</th>
+          <th>Valuasi Real Time</th>
+          <th>PNL %</th>
+        </tr>
+        {% for x in investment if x.category == 'crypto' %}
+          {% set curr = crypto.get(x.asset.upper(), 0) %}
+          {% set now = curr * x.entry_amount %}
+          {% set pnl = ((now - x.amount_idr) / x.amount_idr * 100) if x.amount_idr > 0 else 0 %}
+          <tr>
+            <td>{{ x.date }}</td>
+            <td>{{ x.asset.upper() }}</td>
+            <td>{{ x.amount_idr | idr }}</td>
+            <td>{{ x.entry_price | idr }}</td>
+            <td>{{ x.entry_amount }}</td>
+            <td>{{ now | idr }}</td>
+            <td class="{% if pnl > 0 %}pos{% else %}neg{% endif %}">{{ '%0.2f'|format(pnl) }}%</td>
+          </tr>
+        {% endfor %}
+      </table>
+
+      <!-- ACCUMULATION SUMMARY -->
+      <h3 style="margin-top:25px;">Crypto Accumulation Summary</h3>
+      <table class="accum-table">
+        <tr><th>Token</th><th>Total Modal (Rp)</th><th>Total Koin</th><th>Average Price</th><th>Realtime Value</th><th>PNL (%)</th></tr>
+        {% set tokens = {} %}
+        {% for x in investment if x.category == 'crypto' %}
+          {% set sym = x.asset.upper() %}
+          {% set curr = crypto.get(sym, 0) %}
+          {% set now = curr * x.entry_amount %}
+          {% if sym not in tokens %}
+            {% set _ = tokens.update({sym:{
+              'total_amount': x.amount_idr,
+              'total_coin': x.entry_amount,
+              'curr': curr,
+              'current_value': now
+            }}) %}
+          {% else %}
+            {% set _ = tokens[sym].update({
+              'total_amount': tokens[sym]['total_amount'] + x.amount_idr,
+              'total_coin': tokens[sym]['total_coin'] + x.entry_amount,
+              'curr': curr,
+              'current_value': tokens[sym]['current_value'] + now
+            }) %}
+          {% endif %}
+        {% endfor %}
+
+        {% for sym, t in tokens.items() %}
+          {% set avg_price = t.total_amount / t.total_coin if t.total_coin else 0 %}
+          {% set pnl = ((t.current_value - t.total_amount) / t.total_amount * 100) if t.total_amount > 0 else 0 %}
+          <tr>
+            <td>{{ sym }}</td>
+            <td>{{ t.total_amount | idr }}</td>
+            <td>{{ '%.6f'|format(t.total_coin) }}</td>
+            <td>{{ avg_price | idr }}</td>
+            <td>{{ t.current_value | idr }}</td>
+            <td>{{ '%0.2f'|format(pnl) }}%</td>
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <!-- GOLD -->
+    <div id="gold-detail" class="tab-content full">
+      <h3>Gold Holdings</h3>
+      <form method="post" action="{{ url_for('add_gold') }}">
+        <input type="hidden" name="category" value="gold">
+        <input type="text" name="asset" placeholder="Gold Antam / UBS">
+        <input type="date" name="date" value="{{ today }}">
+        <input type="text" name="amount_idr" class="money" placeholder="Nominal (IDR)">
+        <input type="text" name="entry_price" class="money" placeholder="Harga per Gram (IDR)">
+        <input type="text" name="entry_amount" placeholder="Gram">
+        <input type="text" name="note" placeholder="Catatan">
+        <button type="submit">Tambah</button>
+      </form>
+      <table class="gold-table">
+        <tr><th>Asset</th><th>Tanggal</th><th>Harga/Gram</th><th>Modal (IDR)</th><th>Gram</th><th>Valuasi</th><th>PNL%</th></tr>
+        {% for x in investment if x.category=='gold' %}
+        {% set now = gold * x.entry_amount %}
+        {% set pnl = ((now - x.amount_idr) / x.amount_idr * 100) if x.amount_idr>0 else 0 %}
+        <tr><td>{{ x.asset }}</td><td>{{ x.date }}</td><td>{{ x.entry_price|idr }}</td><td>{{ x.amount_idr|idr }}</td>
+            <td>{{ x.entry_amount }}</td><td>{{ now|idr }}</td><td>{{ '%0.2f'|format(pnl) }}%</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <!-- LAND -->
+    <div id="land-detail" class="tab-content full">
+      <h3>Land Investment</h3>
+      <form method="post" action="{{ url_for('add_land') }}">
+        <input type="hidden" name="category" value="land">
+        <input type="text" name="type" placeholder="Type (tanah, rumah, sawah)">
+        <input type="date" name="date" value="{{ today }}">
+        <input type="text" name="price_per_ubin" class="money" placeholder="Harga per ubin">
+        <input type="text" name="amount_idr" class="money" placeholder="Nominal Total">
+        <input type="text" name="luas_ubin" placeholder="Luas (ubin)">
+        <input type="text" name="note" placeholder="Keterangan Lokasi">
+        <button type="submit">Simpan</button>
+      </form>
+      <table class="land-table">
+        <tr><th>Type</th><th>Tanggal</th><th>Harga/Ubin</th><th>Modal (IDR)</th><th>Luas (m²)</th><th>Keterangan</th></tr>
+        {% for x in investment if x.category=='land' %}
+        <tr><td>{{ x.type }}</td><td>{{ x.date }}</td><td>{{ x.price_per_ubin|idr }}</td><td>{{ x.amount_idr|idr }}</td>
+            <td>{{ x.luas_m2 }}</td><td>{{ x.note }}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <!-- BUSINESS -->
+    <div id="business-detail" class="tab-content full">
+      <h3>Business Capital</h3>
+      <form method="post" action="{{ url_for('add_business') }}">
+        <input type="hidden" name="category" value="business">
+        <input type="text" name="asset" placeholder="Nama Bisnis">
+        <input type="date" name="date" value="{{ today }}">
+        <input type="text" name="unit_value" class="money" placeholder="Nilai Unit (IDR)">
+        <input type="text" name="entry_amount" class="money" placeholder="Modal Masuk (IDR)">
+        <input type="text" name="note" placeholder="Keterangan">
+        <button type="submit">Simpan</button>
+      </form>
+      <table class="business-table">
+        <tr><th>Bisnis</th><th>Tanggal</th><th>Nilai Unit</th><th>Modal</th><th>Keterangan</th></tr>
+        {% for x in investment if x.category=='business' %}
+        <tr><td>{{ x.asset }}</td><td>{{ x.date }}</td><td>{{ x.unit_value|idr }}</td>
+            <td>{{ x.entry_amount|idr }}</td><td>{{ x.note }}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <!-- STOCK -->
+    <div id="stock-detail" class="tab-content full">
+      <h3>Stock Portfolio</h3>
+      <form method="post" action="{{ url_for('add_stock') }}">
+        <input type="hidden" name="category" value="stock">
+        <input type="text" name="asset" placeholder="Emiten (BBCA, BBRI, dll)">
+        <input type="date" name="date" value="{{ today }}">
+        <input type="text" name="amount_idr" class="money" placeholder="Nominal (IDR)">
+        <input type="text" name="entry_price" class="money" placeholder="Harga Beli / Lembar (IDR)">
+        <input type="text" name="entry_amount" placeholder="Jumlah Lot">
+        <input type="text" name="note" placeholder="Catatan">
+        <button type="submit">Tambah</button>
+      </form>
+      <table class="stock-table">
+        <tr><th>Emiten</th><th>Tanggal</th><th>Harga Beli</th><th>Modal</th><th>Lot</th><th>Valuasi</th><th>PNL%</th></tr>
+        {% for x in investment if x.category=='stock' %}
+        {% set now = stock.get(x.asset.upper(),0) * x.entry_amount %}
+        {% set pnl = ((now - x.amount_idr) / x.amount_idr * 100) if x.amount_idr>0 else 0 %}
+        <tr><td>{{ x.asset }}</td><td>{{ x.date }}</td><td>{{ x.entry_price|idr }}</td><td>{{ x.amount_idr|idr }}</td>
+            <td>{{ x.entry_amount }}</td><td>{{ now|idr }}</td><td>{{ '%0.2f'|format(pnl) }}%</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <!-- REBALANCE FORM -->
+    <hr>
+    <h3>💱 Kurangi Dana Investasi (Rebalance)</h3>
+    <form action="/reduce_invest" method="POST" class="mt-3">
+      <label>Pilih Aset</label>
+      <select name="asset" class="form-control money" required>
+        {% for x in investment if x.category == 'crypto' %}
+          <option value="{{ x.asset }}">{{ x.asset }}</option>
+        {% endfor %}
+      </select>
+      <input type="text" name="amount" class="money" placeholder="Nominal Rebalance (Rp)" required>
+      <input type="text" name="note" placeholder="Catatan (opsional)">
+      <button type="submit" class="btn-warning">Kurangi Dana</button>
+    </form>
+
+    {% if investment_reduce %}
+      <h4 class="mt-4">Riwayat Pengurangan Dana</h4>
+      <table class="table table-bordered">
+        <thead><tr><th>Tanggal</th><th>Aset</th><th>Nominal</th><th>Catatan</th></tr></thead>
+        <tbody>
+          {% for r in investment_reduce %}
+          <tr>
+            <td>{{ r.date }}</td>
+            <td>{{ r.asset }}</td>
+            <td>{{ r.amount | idr }}</td>
+            <td>{{ r.note }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  </section>
+</div>
+
+<footer><p>BUKABOX Studio — Machine Uang Progresif v4.3-Sync</p></footer>
+
+<script>
+/* Chart Investasi */
+new Chart(document.getElementById('investChart'),{
+  type:'doughnut',
+  data:{
+    labels:['Crypto','Gold','Land','Business','Stock'],
+    datasets:[{
+      data:[{{ inv_crypto }},{{ inv_gold }},{{ inv_land }},{{ inv_business }},{{ inv_stock or 0 }}],
+      backgroundColor:['#B8E4C9','#FCE0A2','#D7BCE8','#F4C7B8','#A5C8E4'],
+      cutout:'60%'
+    }]
+  },
+  options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom'}}}
+});
+
+/* Formatter uang */
+document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll("input.money").forEach(inp=>{
+  inp.addEventListener("input",()=>{const pos=inp.selectionStart;const val=inp.value.replace(/\D/g,"");
+  const fmt=val.replace(/\B(?=(\d{3})+(?!\d))/g,".");inp.value=fmt;
+  const newPos=pos+(fmt.length-val.length);inp.setSelectionRange(newPos,newPos);});
+  const form=inp.closest("form");if(form){form.addEventListener("submit",()=>{inp.value=inp.value.replace(/\./g,"");});}});});
+</script>
+
+</body>
+</html>

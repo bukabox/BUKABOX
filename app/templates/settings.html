@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Settings — Alokasi & Default</h2>
+  <form method="post" action="{{ url_for('save_settings') }}">
+    <div class="grid">
+      <div>
+        <label>Modal Produksi (%)</label>
+        <input type="number" name="pct_production" value="{{ config.get('pct_production', 35) }}" min="0" max="100">
+      </div>
+      <div>
+        <label>Investasi Crypto (%)</label>
+        <input type="number" name="pct_crypto" value="{{ config.get('pct_crypto', 45) }}" min="0" max="100">
+      </div>
+    </div>
+    <div class="grid">
+      <div>
+        <label>Dana Cadangan Likuid (%)</label>
+        <input type="number" name="pct_cash" value="{{ config.get('pct_cash', 10) }}" min="0" max="100">
+      </div>
+      <div>
+        <label>Diversifikasi Fisik (%)</label>
+        <input type="number" name="pct_real" value="{{ config.get('pct_real', 10) }}" min="0" max="100">
+      </div>
+    </div>
+    <div class="grid">
+      <div>
+        <label>Default DCA BTC per hari (IDR)</label>
+        <input type="number" name="dca_btc_default" value="{{ config.get('dca_btc_default', 0) }}" min="0" step="1000">
+      </div>
+      <div>
+        <label>Zona Waktu (label)</label>
+        <input type="text" name="tz_label" value="{{ config.get('tz_label','Asia/Jakarta (+07:00)') }}">
+      </div>
+    </div>
+    <p class="small">Pastikan total persentase = 100%. Jika tidak, sistem akan menormalkan proporsi.</p>
+    <button type="submit">Simpan</button>
+  </form>
+</div>
+{% endblock %}

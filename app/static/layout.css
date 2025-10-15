@@ -1,0 +1,91 @@
+/* ===== GRID CONTAINER ===== */
+.container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* ===== DESKTOP TWO-COLUMN LAYOUT ===== */
+@media screen and (min-width: 1200px) {
+  .container {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "income-overview invest-overview"
+      "cashflow emergency-fund"
+      "cashflow asset-detail";
+    align-items: start;
+    gap: 24px;
+  }
+
+  #income-overview { grid-area: income-overview; }
+  #cashflow        { grid-area: cashflow; }
+  #invest-overview { grid-area: invest-overview; }
+  #emergency-fund  { grid-area: emergency-fund; }
+  #asset-detail    { grid-area: asset-detail; }
+
+  section {
+    align-self: start;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* ===== MOBILE STACK ===== */
+@media screen and (max-width: 1199px) {
+  .container {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "income-overview"
+      "cashflow"
+      "invest-overview"
+      "emergency-fund"
+      "asset-detail";
+  }
+}
+
+/* ===== EMERGENCY FUND LAYOUT ===== */
+#emergency-fund {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ===== CASHFLOW SECTION ===== */
+#cashflow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  align-items: start;
+  margin-top: 20px;
+}
+
+@media(max-width: 900px) {
+  #cashflow {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== FULL-WIDTH SECTIONS ===== */
+.full-section {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+/* ===== PROGRESS BARS ===== */
+.buffer-progress,
+.crypto-progress {
+  width: 100%;
+  height: 10px;
+  background: #f0f0f0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.buffer-fill,
+.crypto-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #A5C8E4, #B8E4C9);
+  transition: width 0.5s ease;
+}

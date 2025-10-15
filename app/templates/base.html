@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BUKABOX — Financial Intelligence Dashboard v4.3-Sync</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='layout.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  
+</head>
+<body>
+  <header>
+    <h1>BUKABOX — Financial Intelligence Dashboard</h1>
+    <nav>
+      <a href="{{ url_for('index') }}">🏠 Dashboard</a>
+      <a href="{{ url_for('investment_panel') }}">💹 Investment</a>
+    </nav>
+    <p>{{ today }}</p>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <p>© 2025 PT BUKABOX CREATIVE STUDIO</p>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>
