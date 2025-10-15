@@ -962,7 +962,9 @@ table.full-width .empty {
 @media (max-width: 1000px) {
   .masonry {
     flex-direction: column;
+    width:100%;
   }
+  .masonry .col {width:100%;flex:1}
 }
 /* === Reduce Invest Section === */
 .reduce-title,
@@ -1023,7 +1025,4 @@ table.full-width .empty {
 .accum-table tr:hover td {
   filter: brightness(0.97);
   transition: 0.2s ease;
-}
-media(max-width: 1200px) {
-.masonry {width:100%;flex-direction:column}
 }
