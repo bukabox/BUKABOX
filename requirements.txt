@@ -1,3 +1,7 @@
+Flask
+gunicorn
+requests
+
 # --- Core build tools (install first)
 setuptools==69.5.1
 wheel==0.43.0
