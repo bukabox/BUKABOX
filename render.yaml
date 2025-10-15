@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: bukabox-dashboard
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app.main:app"
+    envVars:
+      PYTHON_VERSION: 3.11.9
