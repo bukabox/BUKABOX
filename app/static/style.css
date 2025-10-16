@@ -1020,6 +1020,19 @@ table.full-width .empty {
   filter: brightness(0.97);
   transition: 0.2s ease;
 }
+#cardContainer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  #cardContainer {
+    display: block;  /* satu kolom, no masonry */
+  }
+}
+
 @media (max-width: 1100px) {
   .masonry {
     flex-direction: column !important;

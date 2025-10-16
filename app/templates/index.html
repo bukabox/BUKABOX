@@ -18,7 +18,7 @@
 </header>
 
 
-<div class="container masonry">
+<div id="cardContainer" class="container masonry">
   <div class="col" id="col1"></div>
   <div class="col" id="col2"></div>
 </div>
@@ -346,32 +346,28 @@ new Chart(document.getElementById('investChart'),{
   <a href="{{ url_for('save_month_snapshot') }}" style="background:#92B6E8;color:white;padding:10px 16px;border-radius:6px;text-decoration:none;font-weight:600;box-shadow:0 2px 5px rgba(0,0,0,0.2);">📜 Rekap Bulanan</a>
 </div>
 <script>
-function runMasonry() {
+document.addEventListener("DOMContentLoaded", () => {
   const cols = [
     document.getElementById("col1"),
     document.getElementById("col2")
   ];
   const cards = Array.from(document.querySelectorAll("section.card"));
 
-  // reset isi kolom
-  cols.forEach(col => col.innerHTML = "");
-
-  if (window.innerWidth >= 900) {
-    cards.forEach((card) => {
-      const shorter = cols.reduce((a, b) =>
-        a.offsetHeight < b.offsetHeight ? a : b
-      );
-      shorter.appendChild(card);
-    });
-  } else {
-    // kembalikan urutan default (tanpa masonry)
+  // kalau layar kecil, reset semua card ke satu kontainer
+  if (window.innerWidth < 900) {
     const container = document.getElementById("cardContainer");
     cards.forEach(card => container.appendChild(card));
+    return; // jangan lanjut masonry
   }
-}
 
-window.addEventListener("load", runMasonry);
-window.addEventListener("resize", runMasonry);
+  // jalankan masonry normal di layar besar
+  cards.forEach((card) => {
+    const shorter = cols.reduce((a, b) =>
+      a.offsetHeight < b.offsetHeight ? a : b
+    );
+    shorter.appendChild(card);
+  });
+});
 </script>
 
 </body>
