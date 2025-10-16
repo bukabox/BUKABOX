@@ -1027,10 +1027,6 @@ table.full-width .empty {
   }
   
   .masonry .col {width:100%;flex:1}
-  #revenue { order: 4; }
-  #cashflow { order:1; }
-  #emergency { order: 3; }
-  #investment { order: 2; }
   #income-overview {flex-direction:column}
   .block-chart {display:flex;width:100%;}
   .block-chart .left, .block-chart .right{flex: 0 50;min-width: 50%;}
