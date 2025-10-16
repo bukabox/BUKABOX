@@ -72,6 +72,24 @@ def jfmt(v):
 def same_month(date_str, month):
     return date_str.startswith(month)
 
+DATA_DIR = "/data"  # folder permanen di Fly.io
+
+def load_json(filename):
+    path = os.path.join(DATA_DIR, filename)
+    if not os.path.exists(path):
+        return []
+    with open(path, "r") as f:
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
+            return []
+
+def save_json(filename, data):
+    path = os.path.join(DATA_DIR, filename)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(data, f, indent=4)
+        
 # ---------- API FETCH ----------
 # ==========================================================
 # ===   CACHED API FETCH (15 MINUTES LIMIT)               ===
