@@ -1,0 +1,16 @@
+[
+    {
+        "username": "admin",
+        "password_hash": "scrypt:32768:8:1$bykn05EOU3g07oBz$efda389e4ef1eb9858a5414e881dc3b4b77acd280c1cd54996ad61d9ba53cc909fbe10b0a3a3575cdd5eba7f8667d1f5516cb5a5493291aceab8cc44c988c715"
+    },
+    {
+        "username": "ichi",
+        "password_hash": "scrypt:32768:8:1$ZJRxkLPR4PvEd7jD$f86c3805193ff24e1fe94f2b55b3a8cea4324cb028a05e7233d4c778f3dc0f2561c679efc345c1ac4b2a83b7f8fe8cbb24bbf4b6be880c27ddc164100b097b76",
+        "created_at": "2025-10-16T11:08:06.228539"
+    },
+    {
+        "username": "Bukabox",
+        "password_hash": "scrypt:32768:8:1$PeCJcvOLOWJeXq1o$849f31a54868c5059e2426a29f3d3fe881c375da7e6db1a32ad89cd528b86372479a0bcef81d439275f582701e664a704b9c922b09627f5ceade5cffb4b988c2",
+        "created_at": "2025-10-16T11:41:13.600880"
+    }
+]
