@@ -1,0 +1,14 @@
+[
+  {
+    "date": "2025-10-16",
+    "category": "Houshold",
+    "amount": 1000000.0,
+    "note": "Listrik"
+  },
+  {
+    "date": "2025-10-16",
+    "category": "Lain",
+    "amount": 50243.0,
+    "note": "Web Deployer"
+  }
+]

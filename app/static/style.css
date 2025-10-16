@@ -170,6 +170,10 @@ header h1 {
   }
 }
 
+.user-banner {display:flex}
+.user-banner a {line-height:10px;vertical-align: middle;
+    display: flex;
+    align-items: center;}
 
 /* â”€â”€â”€â”€â”€ Section Base â”€â”€â”€â”€â”€ */
 section {

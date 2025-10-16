@@ -3,7 +3,6 @@
 <head>
   <meta charset="utf-8">
   <title>📜 Rekap Bulanan — BUKABOX</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='layout.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <style>
     body {
@@ -28,9 +27,10 @@
     }
 
     .container {
-      max-width: 1000px;
+      max-width: 1600px;
       margin: 40px auto;
       padding: 0 20px;
+      display:flex;
     }
 
     table.history-table {
@@ -176,8 +176,8 @@
 </div>
 
 <footer>
-  <p>BUKABOX — Financial Intelligence Dashboard v4.3</p>
+  <p>© 2025 PT BUKABOX CREATIVE STUDIO</p>
 </footer>
-
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
