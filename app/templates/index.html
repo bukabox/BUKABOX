@@ -80,6 +80,22 @@
 
   <!-- ======= TABEL EXPENSE (area bawah merah) ======= -->
   <div id="exp-table-box" class="expense-box">
+    <h3>Catat Pengeluaran Baru</h3>
+
+  <form method="post" action="{{ url_for('add_expense') }}">
+    <div class="grid2">
+      <input type="date" name="date" value="{{ today }}">
+      <input type="text" name="category" placeholder="Kategori (misal: Makan, Transport, dll)" required>
+      <input type="text" name="amount" class="money" autocomplete="off" placeholder="Jumlah (IDR)" required>
+      <input type="text" name="note" placeholder="Catatan opsional">
+      <button type="submit">Tambah</button>
+    </div>
+  </form>
+
+  <form action="/cancel_last/expense" method="POST" style="margin-top:8px;">
+    <button type="submit" class="cancel-btn">⟲ Batalkan Input Terakhir</button>
+  </form>
+
     <table class="expense-table full-width">
       <thead>
         <tr>
@@ -330,18 +346,32 @@ new Chart(document.getElementById('investChart'),{
   <a href="{{ url_for('save_month_snapshot') }}" style="background:#92B6E8;color:white;padding:10px 16px;border-radius:6px;text-decoration:none;font-weight:600;box-shadow:0 2px 5px rgba(0,0,0,0.2);">📜 Rekap Bulanan</a>
 </div>
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const cols = [document.getElementById("col1"), document.getElementById("col2")];
+function runMasonry() {
+  const cols = [
+    document.getElementById("col1"),
+    document.getElementById("col2")
+  ];
   const cards = Array.from(document.querySelectorAll("section.card"));
 
-  cards.forEach((card, i) => {
-    // cari kolom yang paling pendek
-    const shorter = cols.reduce((a, b) =>
-      a.offsetHeight < b.offsetHeight ? a : b
-    );
-    shorter.appendChild(card);
-  });
-});
+  // reset isi kolom
+  cols.forEach(col => col.innerHTML = "");
+
+  if (window.innerWidth >= 900) {
+    cards.forEach((card) => {
+      const shorter = cols.reduce((a, b) =>
+        a.offsetHeight < b.offsetHeight ? a : b
+      );
+      shorter.appendChild(card);
+    });
+  } else {
+    // kembalikan urutan default (tanpa masonry)
+    const container = document.getElementById("cardContainer");
+    cards.forEach(card => container.appendChild(card));
+  }
+}
+
+window.addEventListener("load", runMasonry);
+window.addEventListener("resize", runMasonry);
 </script>
 
 </body>

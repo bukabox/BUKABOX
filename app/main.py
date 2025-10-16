@@ -334,7 +334,7 @@ def index():
     return render_template(
         "index.html",
         today=today.isoformat(),
-        income=income, cashflow=cashflow, investment=investment, emergency=emergency,
+        income=income, cashflow=month_expense, investment=investment, emergency=emergency,
         total_income=total_income, total_expense=total_expense,
         total_invest_month=total_invest_month, total_port=total_port,
         inv_crypto=inv_crypto, inv_gold=inv_gold, inv_land=inv_land, inv_business=inv_business,
@@ -467,6 +467,48 @@ def add_income():
         "note": request.form.get("note", ""),
     })
     save_json("income.json", data)
+    return redirect(url_for("index"))
+
+@app.route("/add_expense", methods=["POST"])
+def add_expense():
+    """Tambah pengeluaran baru"""
+    expense = load_json("expense.json")
+    cash = load_json("cashflow.json")
+
+    date = request.form.get("date", "")
+    category = request.form.get("category", "")
+    note = request.form.get("note", "")
+    raw_amount = request.form.get("amount", "0")
+
+    try:
+        amount = float(raw_amount.replace(".", "").replace(",", ""))
+    except:
+        amount = 0
+
+    if amount <= 0:
+        flash("Nominal tidak valid.", "warning")
+        return redirect(url_for("index"))
+
+    # Simpan ke expense.json
+    expense.append({
+        "date": date,
+        "category": category,
+        "amount": amount,
+        "note": note
+    })
+    save_json("expense.json", expense)
+
+    # Catat ke cashflow.json
+    cash.append({
+        "date": date,
+        "type": "expense",
+        "category": category,
+        "amount": amount,
+        "note": note
+    })
+    save_json("cashflow.json", cash)
+
+    flash(f"Pengeluaran {category} sebesar {fmt_idr(amount)} ditambahkan.", "success")
     return redirect(url_for("index"))
 
 

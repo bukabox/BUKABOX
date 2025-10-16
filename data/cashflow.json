@@ -96,5 +96,19 @@
     "category": "Investment crypto",
     "amount": 1000000.001546,
     "note": ""
+  },
+  {
+    "date": "2025-10-16",
+    "type": "expense",
+    "category": "Houshold",
+    "amount": 1000000.0,
+    "note": "Listrik"
+  },
+  {
+    "date": "2025-10-16",
+    "type": "expense",
+    "category": "Lain",
+    "amount": 50243.0,
+    "note": "Web Deployer"
   }
 ]
