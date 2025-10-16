@@ -98,8 +98,9 @@
     </div>
     <div class="summary-box buffer">
       <p><strong>Buffer (Sisa Bulan Ini):</strong>
-        <span class="{% if buffer_balance < 0 %}negative{% else %}positive{% endif %}">
-          {{ buffer_balance | currency_format }}
+        <span class="{{ buffer_state }}">
+        {{ buffer_balance | currency_format }}
+      </span>
         </span>
       </p>
     </div>

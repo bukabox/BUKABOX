@@ -8,25 +8,62 @@
 </head>
 <body>
 
-<header>
-  <h1>BUKABOX — Financial Intelligence Dashboard v4.3-Sync</h1>
-  <nav>
-    <a href="{{ url_for('index') }}" class="active">🏠 Dashboard</a>
-    <a href="{{ url_for('investment_panel') }}">💹 Investment</a>
-  </nav>
-  <p>{{ today }}</p>
+<!-- Header -->
+<header class="navbar">
+  <div class="content-wrap nav-inner">
+    <!-- Kiri: Logo -->
+    <div class="nav-left">
+      <span class="logo">💼 BUKABOX <small>— Financial Intelligence Dashboard</small></span>
+    </div>
+
+    <!-- Tombol Burger -->
+    <button class="nav-toggle" id="navToggle" aria-label="toggle menu" aria-expanded="false">☰</button>
+
+    <!-- Menu Navigasi -->
+    <nav class="nav-menu" id="navMenu">
+      <a href="{{ url_for('index') }}" class="btn-nav active">Dashboard</a>
+      <a class="btn-nav" href="{{ url_for('investment_panel') }}">Investment</a>
+      {% if not session.get('logged_in') %}
+        <a href="#" id="loginBtn" class="btn-nav">Login</a>
+      {% else %}
+        <a href="{{ url_for('logout') }}" class="btn-nav highlight">Logout</a>
+      {% endif %}
+      <a class="btn-nav" href="{{ url_for('save_month_snapshot') }}">Rekap Bulanan</a>
+      <div class="user-banner">
+  <span>👤 {{ session['username'] }}</span>
+  <a href="{{ url_for('logout') }}" title="Logout" style="margin-left:6px;">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+    <polyline points="16 17 21 12 16 7"/>
+    <line x1="21" y1="12" x2="9" y2="12"/>
+  </svg>
+</a>
+</div>
+    </nav>
+  </div>
 </header>
 
 
-<div class="container">
+
+
+<div id="cardContainer" class="container masonry">
+  <div class="col" id="col1"></div>
+  <div class="col" id="col2"></div>
+</div>
 
   <!-- SECTION 1 – INCOME -->
-  <section id="income-overview">
+  <section id="income-overview" class="card">
+    <div class="block-chart">
     <div class="left">
-      <canvas id="incomeChart"></canvas>
+      <canvas id="incomeChart"
+  data-labels="{% if income %}{% for i in income %}{{ i.stream }}{% if not loop.last %},{% endif %}{% endfor %}{% else %}Belum ada data{% endif %}"
+  data-values="{% if income %}{% for i in income %}{{ i.amount }}{% if not loop.last %},{% endif %}{% endfor %}{% else %}0{% endif %}">
+</canvas>
     </div>
+
     <div class="right">
       <h2>Revenue Streams</h2>
+      {% if session.get('logged_in') %}
       <form method="post" action="{{ url_for('add_income') }}">
         <div class="grid2">
           <input type="date" name="date" value="{{ today }}">
@@ -39,17 +76,19 @@
       <form action="/cancel_last/income" method="POST" style="margin-top:8px;">
         <button type="submit" class="cancel-btn">⟲ Batalkan Input Terakhir</button>
       </form>
-      <table>
+  {% endif %}
+    </div>
+  </div>
+  <table>
         <tr><th>Stream</th><th>Amount</th><th>Note</th></tr>
         {% for i in income|reverse %}
         <tr><td>{{ i.stream }}</td><td>{{ i.amount|idr }}</td><td>{{ i.note }}</td></tr>
         {% endfor %}
       </table>
-    </div>
   </section>
 
   <!-- SECTION 2 – CASHFLOW -->
-<section id="cashflow">
+<section id="cashflow" class="card">
   <div class="left">
     <h2>Cashflow {{ today[:7] }}</h2>
     <div class="cash-block"><h3>Income : {{ total_income|idr }}</h3></div>
@@ -67,12 +106,33 @@
   </div>
 
   <div class="right">
-    <canvas id="cashflowChart"></canvas>
+    <canvas id="cashflowChart"
+  data-income="{{ total_income }}"
+  data-expense="{{ total_expense }}"
+  data-invest="{{ total_invest_month }}"
+  data-buffer="{{ buffer_balance }}">
+</canvas>
     
   </div>
 
   <!-- ======= TABEL EXPENSE (area bawah merah) ======= -->
   <div id="exp-table-box" class="expense-box">
+    <h3>Catat Pengeluaran Baru</h3>
+{% if session.get('logged_in') %}
+  <form method="post" action="{{ url_for('add_expense') }}">
+    <div class="grid2">
+      <input type="date" name="date" value="{{ today }}">
+      <input type="text" name="category" placeholder="Kategori (misal: Makan, Transport, dll)" required>
+      <input type="text" name="amount" class="money" autocomplete="off" placeholder="Jumlah (IDR)" required>
+      <input type="text" name="note" placeholder="Catatan opsional">
+      <button type="submit">Tambah</button>
+    </div>
+  </form>
+
+  <form action="/cancel_last/expense" method="POST" style="margin-top:8px;">
+    <button type="submit" class="cancel-btn">⟲ Batalkan Input Terakhir</button>
+  </form>
+  {% endif %}
     <table class="expense-table full-width">
       <thead>
         <tr>
@@ -105,6 +165,7 @@
 <!-- 💰 Dana Darurat -->
 <section id="emergency-fund" class="card full-width">
   <h2>💰 Dana Darurat</h2>
+  {% if session.get('logged_in') %}
   <form method="post" action="{{ url_for('add_emergency') }}">
     <input type="date" name="date" value="{{ today }}">
     <input type="text" name="amount" class="money" placeholder="Jumlah (IDR)">
@@ -119,12 +180,37 @@
     <button type="submit" class="btn-red">Kurangi</button>
   </form>
 
+  {% endif %}
   <hr>
 
   <div class="emergency-summary">
     <p><strong>Total terkumpul:</strong> {{ total_emergency | currency_format }}</p>
     <p>Target 1: Rp {{ target1 | currency_format }}</p>
+    
+    <!-- Progress 1: terhadap target1 -->
+<div class="progress-container">
+  <div class="progress-bar">
+    <div class="progress-fill" 
+         style="width: {{ ((total_emergency / target1) * 100) if target1 else 0 }}%;
+                background: linear-gradient(90deg, #f4b942, #f77f00);">
+      {{ ((total_emergency / target1) * 100) | round(1) }}%
+    </div>
+  </div>
+  <p style="font-size:12px;color:#777;margin:4px 0 0 0;">Progress 1 dari {{ target1 | currency_format }}</p>
+</div>
     <p>Target 2: Rp {{ target2 | currency_format }}</p>
+<!-- Progress 2: terhadap target2 -->
+<div class="progress-container">
+  <div class="progress-bar">
+    <div class="progress-fill" 
+         style="width: {{ ((total_emergency / target2) * 100) if target2 else 0 }}%;
+                background: linear-gradient(90deg, #6fbf73, #2b9348);">
+      {{ ((total_emergency / target2) * 100) | round(1) }}%
+    </div>
+  </div>
+  <p style="font-size:12px;color:#777;margin:4px 0 0 0;">Progress 2 dari {{ target2 | currency_format }}</p>
+</div>
+
   </div>
 
   <table class="emergency-table">
@@ -149,8 +235,16 @@
 
 
   <!-- SECTION 3 – GLOBAL INVESTMENT OVERVIEW -->
-  <section id="invest-overview">
-    <div class="left"><canvas id="investChart"></canvas></div>
+  <section id="invest-overview" class="card">
+    <div class="left">
+    <canvas id="investChart"
+  data-crypto="{{ inv_crypto }}"
+  data-gold="{{ inv_gold }}"
+  data-land="{{ inv_land }}"
+  data-business="{{ inv_business }}"
+  data-stock="{{ inv_stock or 0 }}">
+</canvas>
+    </div>
     <div class="right">
       <h2>Investment Allocation</h2>
       <table>
@@ -164,131 +258,64 @@
     </div>
   </section>
 
-</div>
 
-<footer><p>BUKABOX Studio — Machine Uang Progresif v4.3-Sync</p>
+
+<footer><p>© 2025 PT BUKABOX CREATIVE STUDIO</p>
 <form action="{{ url_for('save_history') }}" method="get" style="margin-top:20px;">
   <button type="submit" style="padding:8px 12px;">💾 Simpan Snapshot Bulanan</button>
+
+  <form action="{{ url_for('rollover_action') }}" method="POST" style="margin-top:20px;">
+  <button type="submit" class="btn-warning">
+    🔄 Tutup Bulan (Rollover)
+  </button>
+</form>
+</form>
 </form>
 
 </footer>
 
-<script>
-function calcCryptoAmount(){
-  const idr=parseFloat(document.getElementById('crypto_idr').value.replace(/\./g,''))||0;
-  const price=parseFloat(document.getElementById('crypto_price').value.replace(/\./g,''))||0;
-  document.getElementById('crypto_total').value=price>0?(idr/price).toFixed(6):0;
-}
-function calcGoldGram(){
-  const idr=parseFloat(document.getElementById('gold_idr').value.replace(/\./g,''))||0;
-  const price=parseFloat(document.getElementById('gold_price').value.replace(/\./g,''))||0;
-  document.getElementById('gold_total').value=price>0?(idr/price).toFixed(2):0;
-}
-function calcStockLot(){
-  const idr=parseFloat(document.getElementById('stock_idr').value.replace(/\./g,''))||0;
-  const price=parseFloat(document.getElementById('stock_price').value.replace(/\./g,''))||0;
-  document.getElementById('stock_total').value=price>0?(idr/(price*100)).toFixed(2):0;
-}
-function calcLandValue(){
-  const ubin=parseFloat(document.getElementById('land_ubin').value)||0;
-  const price=parseFloat(document.getElementById('land_price').value.replace(/\./g,''))||0;
-  document.getElementById('land_total').value=(ubin*price).toFixed(0);
-}
-function toggleDetail(id){document.getElementById(id).classList.toggle("open");}
-function openDetail(t){document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
-  const el=document.getElementById(t+'-detail');if(el){el.classList.add('active');}
-  document.getElementById('asset-detail').scrollIntoView({behavior:'smooth'});}
-document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll("input.money").forEach(inp=>{
-  inp.addEventListener("input",()=>{const pos=inp.selectionStart;const val=inp.value.replace(/\D/g,"");
-  const fmt=val.replace(/\B(?=(\d{3})+(?!\d))/g,".");inp.value=fmt;
-  const newPos=pos+(fmt.length-val.length);inp.setSelectionRange(newPos,newPos);});
-  const form=inp.closest("form");if(form){form.addEventListener("submit",()=>{inp.value=inp.value.replace(/\./g,"");});}});});
-</script>
-<script>
-const commonOpt = {
-  responsive:true,
-  maintainAspectRatio:true,
-  aspectRatio:1,
-  plugins:{
-    legend:{ position:'bottom', labels:{ font:{size:13}, color:'#333' } },
-    tooltip:{
-      callbacks:{
-        label:function(context){
-          const dataset=context.dataset;
-          const total=dataset.data.reduce((a,b)=>a+b,0);
-          const val=dataset.data[context.dataIndex];
-          const percent=((val/total)*100).toFixed(1);
-          return `${context.label}: ${percent}%`;
-        }
-      }
-    }
-  }
-};
 
-/* ───── Income Chart ───── */
-new Chart(document.getElementById('incomeChart'),{
-  type:'doughnut',
-  data:{
-    labels:[{% for i in income %}'{{ i.stream }}',{% endfor %}],
-    datasets:[{
-      data:[{% for i in income %}{{ i.amount }},{% endfor %}],
-      backgroundColor:['#B8E4C9','#A5C8E4','#F4C7B8','#EAD1DC'],
-      cutout:'60%'
-    }]
-  },
-  options:commonOpt
-});
 
-/* ───── Cashflow Chart ───── */
-new Chart(document.getElementById('cashflowChart'), {
-  type: 'pie',
-  data: {
-    labels: ['Income', 'Expense', 'Investment', 'Buffer'],
-    datasets: [{
-      data: [{{ total_income }}, {{ total_expense }}, {{ total_invest_month }}, {{ buffer_balance }}],
-      backgroundColor: ['#A5C8E4','#F4C7B8','#B8E4C9','#C6E2B3']
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: true,
-    aspectRatio: 1,
-    plugins: {
-      legend: { position: 'bottom' },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            const total = context.dataset.data.reduce((a,b)=>a+b,0);
-            const value = context.raw;
-            const percent = ((value/total)*100).toFixed(1);
-            // format angka menjadi ribuan dengan titik
-            const formatted = value.toLocaleString('id-ID');
-            return `${context.label}: Rp ${formatted} (${percent}%)`;
-          }
-        }
-      }
-    }
-  }
-});
-
-/* ───── Investment Chart ───── */
-new Chart(document.getElementById('investChart'),{
-  type:'doughnut',
-  data:{
-    labels:['Crypto','Gold','Land','Business','Stock'],
-    datasets:[{
-      data:[{{ inv_crypto }},{{ inv_gold }},{{ inv_land }},{{ inv_business }},{{ inv_stock or 0 }}],
-      backgroundColor:['#B8E4C9','#FCE0A2','#D7BCE8','#F4C7B8','#A5C8E4'],
-      cutout:'60%'
-    }]
-  },
-  options:commonOpt
-});
-</script>
 
 <div style="position:fixed;top:20px;right:20px;z-index:100;">
+  
   <a href="{{ url_for('save_month_snapshot') }}" style="background:#92B6E8;color:white;padding:10px 16px;border-radius:6px;text-decoration:none;font-weight:600;box-shadow:0 2px 5px rgba(0,0,0,0.2);">📜 Rekap Bulanan</a>
 </div>
 
+  <!-- Modal Login -->
+  <div id="loginModal" class="modal">
+  <div class="modal-card">
+    <h2>Masuk ke Dashboard</h2>
+    <form id="loginForm" method="POST">
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+      <p id="loginMsg"></p>
+      <p class="switch">
+        Belum punya akun?
+        <a href="#" id="showRegister">Daftar di sini</a>
+      </p>
+    </form>
+  </div>
+</div>
+
+<!-- ================= REGISTER MODAL ================= -->
+<div id="registerModal" class="modal">
+  <div class="modal-card">
+    <h2>Buat Akun Baru</h2>
+    <form id="registerForm" method="POST">
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <input type="password" name="confirm" placeholder="Konfirmasi Password" required>
+      <button type="submit">Daftar</button>
+      <p id="registerMsg"></p>
+      <p class="switch">
+        Sudah punya akun?
+        <a href="#" id="showLogin">Masuk di sini</a>
+      </p>
+    </form>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

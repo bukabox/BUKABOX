@@ -221,5 +221,15 @@ Chart.register({
       });
     }
   }
+  /* -------------------- Toggle Detail Cashflow -------------------- */
+  window.toggleDetail = function(id) {
+    const box = document.getElementById(id);
+    if (!box) return;
+    box.classList.toggle('open');
+    // Scroll agar tabel terlihat penuh saat dibuka
+    if (box.classList.contains('open')) {
+      box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
 }); // END DOMContentLoaded

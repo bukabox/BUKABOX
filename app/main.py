@@ -406,10 +406,9 @@ def index():
     progress1 = min(100, (total_emergency / target1) * 100) if target1 else 0
     progress2 = min(100, (total_emergency / target2) * 100) if target2 else 0
 
-    # === Buffer ===
     buffer_balance = total_income - (total_expense + total_invest_month)
-    if buffer_balance < 0:
-        buffer_balance = 0
+    buffer_state = "positive" if buffer_balance >= 0 else "negative"
+
     # Ambil bulan aktif
     current_month = datetime.date.today().strftime("%Y-%m")
 
@@ -489,7 +488,7 @@ def index():
         inv_crypto=inv_crypto, inv_gold=inv_gold, inv_land=inv_land, inv_business=inv_business,
         crypto=crypto, gold=gold,
         total_emergency=total_emergency, progress1=progress1, progress2=progress2,
-        target1=target1, target2=target2, buffer_balance=buffer_balance,
+        target1=target1, target2=target2, buffer_balance=buffer_balance, buffer_state=buffer_state,
         crypto_accumulation=crypto_accumulation,
         investment_reduce=investment_reduce,
     )
