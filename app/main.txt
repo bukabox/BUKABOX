@@ -88,78 +88,21 @@ def same_month(date_str, month):
 
 
 
-# ---------- UTIL MULTI-USER (v4.6) ----------
-def get_user_dir():
-    """
-    Tentukan folder data aktif berdasarkan user login.
-    Jika belum login, gunakan folder global (DATA_DIR) untuk mode single-user.
-    """
-    user = session.get("username")
-    if user:
-        user_dir = os.path.join(DATA_DIR, user)
-        os.makedirs(user_dir, exist_ok=True)
-
-        # Pastikan subfolder wajib selalu ada
-        for sub in ["history", "reports"]:
-            os.makedirs(os.path.join(user_dir, sub), exist_ok=True)
-
-        # Simpan jalur history & reports global agar route lain bisa pakai
-        global HISTORY_DIR, REPORT_DIR
-        HISTORY_DIR = os.path.join(user_dir, "history")
-        REPORT_DIR = os.path.join(user_dir, "reports")
-
-        return user_dir
-    else:
-        # fallback single-user (untuk debugging)
-        return DATA_DIR
-
-
-
 def load_json(filename):
-    """
-    Membaca file JSON dari folder user aktif.
-    Jika file tidak ditemukan, akan dikembalikan list kosong [].
-    """
-    user_dir = get_user_dir()
-    path = os.path.join(user_dir, filename)
-
-    # fallback ke DATA_DIR lama jika file belum ada di user_dir
+    path = os.path.join(DATA_DIR, filename)
     if not os.path.exists(path):
-        global_path = os.path.join(DATA_DIR, filename)
-        if os.path.exists(global_path):
-            path = global_path
-        else:
+        return []
+    with open(path, "r") as f:
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
             return []
 
-    try:
-        with open(path, "r") as f:
-            return json.load(f)
-    except json.JSONDecodeError:
-        print(f"[WARN] JSON rusak: {path}")
-        return []
-    except Exception as e:
-        print(f"[ERROR] load_json({filename}):", e)
-        return []
-
-
 def save_json(filename, data):
-    """
-    Menulis file JSON ke folder user aktif.
-    Semua struktur folder otomatis dibuat jika belum ada.
-    """
-    user_dir = get_user_dir()
-    path = os.path.join(user_dir, filename)
+    path = os.path.join(DATA_DIR, filename)
     os.makedirs(os.path.dirname(path), exist_ok=True)
-
-    try:
-        with open(path, "w") as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
-        # debug info
-        print(f"[SAVE] {filename} → {path}")
-    except Exception as e:
-        print(f"[ERROR] save_json({filename}):", e)
-
-
+    with open(path, "w") as f:
+        json.dump(data, f, indent=4)
         
 # ---------- USER MANAGEMENT ----------
 USER_FILE = os.path.join(DATA_DIR, "users.json")
@@ -339,23 +282,6 @@ def login_required(f):
             return redirect(url_for("login"))
         return f(*args, **kwargs)
     return decorated_function
-
-
-# ---------- GLOBAL ACCESS PROTECTION (v4.5) ----------
-@app.before_request
-def restrict_access():
-    """
-    Middleware untuk membatasi akses hanya bagi user yang sudah login.
-    Hanya route login, register, logout, dan file static yang boleh diakses bebas.
-    """
-    open_endpoints = {"login", "register", "logout", "static"}
-    endpoint = request.endpoint or ""
-
-    # Jika bukan endpoint publik dan belum login → redirect ke login
-    if not session.get("logged_in") and endpoint not in open_endpoints:
-        if request.path not in [url_for("login"), url_for("register")]:
-            return redirect(url_for("login"))
-
 
 # ---------- ROUTES ----------
 @app.route("/")
@@ -948,12 +874,11 @@ def rekap_redirect():
 
 @app.route("/history")
 def history_panel():
-    history_dir = os.path.join(get_user_dir(), "history")
-    files = sorted([f for f in os.listdir(history_dir) if f.endswith(".json")], reverse=True)
+    files = sorted([f for f in os.listdir(HISTORY_DIR) if f.endswith(".json")], reverse=True)
     histories = []
 
     for fname in files:
-        path = os.path.join(history_dir, fname)
+        path = os.path.join(HISTORY_DIR, fname)
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
 
@@ -970,21 +895,19 @@ def history_panel():
 
 
 @app.route("/history/snapshot")
-@login_required
 def save_month_snapshot():
-    """
-    Simpan snapshot bulanan ke folder pribadi user.
-    Setiap user punya folder /data/<username>/history/
-    """
     today = datetime.date.today()
     month_label = today.strftime("%Y-%m")
 
-    # --- Ambil data dari folder user aktif ---
     income = load_json("income.json")
     cashflow = load_json("cashflow.json")
     investment = load_json("investment.json")
+    crypto = load_json("crypto.json")
+    gold = load_json("gold.json")
+    land = load_json("land.json")
+    business = load_json("business.json")
+    stock = load_json("stock.json")
 
-    # --- Fungsi bantu filter bulan aktif ---
     def same_month(date_str):
         if not date_str:
             return False
@@ -994,20 +917,34 @@ def save_month_snapshot():
         except Exception:
             return False
 
-    # --- Filter data bulan ini ---
     month_income = [i for i in income if same_month(i.get("date", ""))]
     month_expense = [c for c in cashflow if c.get("type") == "expense" and same_month(c.get("date", ""))]
-    month_invest = [i for i in investment if same_month(i.get("date", ""))]
 
-    # --- Hitung ringkasan ---
+    # Gabungkan semua jenis investasi
+    month_invest = []
+    for dataset, cat in [
+        (investment, "investment"),
+        (crypto, "crypto"),
+        (gold, "gold"),
+        (land, "land"),
+        (business, "business"),
+        (stock, "stock"),
+    ]:
+        for item in dataset:
+            if same_month(item.get("date", "")):
+                item["category"] = cat
+                month_invest.append(item)
+
+    # Hitung total
     summary = {
         "income": sum(float(i.get("amount", 0)) for i in month_income),
         "expense": sum(float(c.get("amount", 0)) for c in month_expense),
         "investment": sum(float(i.get("amount_idr", i.get("amount", 0))) for i in month_invest),
     }
+
+    # Hitung buffer
     summary["buffer"] = summary["income"] - (summary["expense"] + summary["investment"])
 
-    # --- Struktur snapshot ---
     snapshot = {
         "month": month_label,
         "timestamp": today.isoformat(),
@@ -1019,22 +956,13 @@ def save_month_snapshot():
         },
     }
 
-    # --- Simpan ke folder user ---
-    history_dir = os.path.join(get_user_dir(), "history")
-    os.makedirs(history_dir, exist_ok=True)
-    out_path = os.path.join(history_dir, f"{month_label}.json")
+    os.makedirs(HISTORY_DIR, exist_ok=True)
+    out_path = os.path.join(HISTORY_DIR, f"{month_label}.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(snapshot, f, indent=2, ensure_ascii=False)
 
-    try:
-        with open(out_path, "w", encoding="utf-8") as f:
-            json.dump(snapshot, f, indent=2, ensure_ascii=False)
-        print(f"[Snapshot] {session.get('username')} → {out_path}")
-        flash(f"Snapshot bulan {month_label} tersimpan di folder pribadi Anda.", "success")
-    except Exception as e:
-        print(f"[ERROR] Gagal menyimpan snapshot: {e}")
-        flash("Gagal menyimpan snapshot bulanan.", "danger")
-
+    print(f"[Snapshot] Tersimpan ke {out_path}")
     return redirect(url_for("history_panel"))
-
 
 
 @app.route("/history/<month>")
@@ -1074,7 +1002,7 @@ def export_history_pdf(month):
     from reportlab.lib import colors
 
     filename = f"history_{month}.pdf"
-    pdf_path = os.path.join(get_user_dir(), "reports", filename)
+    pdf_path = os.path.join("app/history", filename)
     doc = SimpleDocTemplate(pdf_path, pagesize=A4)
     styles = getSampleStyleSheet()
     elements = []
@@ -1161,7 +1089,7 @@ def export_history_pdf(month):
 
     # --- Income ---
     if entries.get("income"):
-        elements.append(Paragraph("<b>📊 Daftar Pendapatan</b>", styles["Heading2"]))
+        elements.append(Paragraph("<b>ðŸ“Š Daftar Pendapatan</b>", styles["Heading2"]))
         inc_data = [["Tanggal", "Stream", "Jumlah", "Catatan"]]
         for i in entries["income"]:
             inc_data.append([
@@ -1223,19 +1151,12 @@ def export_history_pdf(month):
         elements.append(t)
         elements.append(Spacer(1,12))
 
-    # --- Simpan PDF ke folder user ---
-    pdf_path = os.path.join(get_user_dir(), "reports", f"history_{month}.pdf")
+    # --- Simpan PDF ---
     os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
+    doc.build(elements)
+    print(f"[PDF] Rekap tersimpan: {pdf_path}")
 
-    try:
-        doc.build(elements)
-        print(f"[PDF] Rekap tersimpan: {pdf_path}")
-        return send_file(pdf_path, as_attachment=True)
-    except Exception as e:
-        print(f"[PDF ERROR] Gagal membuat PDF: {e}")
-        flash("Gagal menyimpan file PDF.", "danger")
-        return redirect(url_for("history_panel"))
-
+    return send_file(pdf_path, as_attachment=True)
 
 @app.route("/save_history")
 def save_history():
@@ -1311,9 +1232,8 @@ def save_history():
         "saved_at": today.isoformat()
     }
 
-    user_history = os.path.join(get_user_dir(), "history")
-    os.makedirs(user_history, exist_ok=True)
-    file_path = os.path.join(user_history, f"{month_id}.json")
+    os.makedirs("history", exist_ok=True)
+    file_path = f"history/{month_id}.json"
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(snapshot, f, indent=2, ensure_ascii=False)
 
@@ -1445,52 +1365,17 @@ def rollover_action():
 # ---------- AUTH ROUTES ----------
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    """
-    Login multi-user dengan pembuatan folder data otomatis per user.
-    Jika login berhasil, user diarahkan ke dashboard dan semua data
-    akan diarahkan ke folder app/data/<username>/
-    """
     if request.method == "POST":
-        username = (request.form.get("username") or "").strip()
-        password = (request.form.get("password") or "").strip()
-
+        username = request.form.get("username")
+        password = request.form.get("password")
         users = load_users()
         user = next((u for u in users if u["username"] == username), None)
-
         if user and check_password_hash(user["password_hash"], password):
-            # ====== SESSION AKTIF ======
             session["logged_in"] = True
             session["username"] = username
-
-            # ====== BUAT FOLDER DATA USER ======
-            user_dir = os.path.join(DATA_DIR, username)
-            os.makedirs(user_dir, exist_ok=True)
-
-            # Buat subfolder wajib
-            for sub in ["history", "reports"]:
-                os.makedirs(os.path.join(user_dir, sub), exist_ok=True)
-
-            # Inisialisasi file dasar jika belum ada
-            for f in [
-                "income.json", "cashflow.json", "investment.json",
-                "emergency.json", "buffer.json", "investment_reduce.json"
-            ]:
-                path = os.path.join(user_dir, f)
-                if not os.path.exists(path):
-                    with open(path, "w") as fp:
-                        fp.write("[]")
-
-            print(f"[LOGIN] {username} masuk | Folder data: {user_dir}")
-            flash(f"Selamat datang, {username}!", "success")
-            return redirect(url_for("index"))
-
-        # === LOGIN GAGAL ===
-        flash("Username atau password salah.", "danger")
-        return redirect(url_for("login"))
-
-    # GET method → tampilkan halaman login
+            return jsonify({"success": True})
+        return jsonify({"success": False})
     return render_template("login.html")
-
 
 
 @app.route("/logout")
@@ -1499,57 +1384,43 @@ def logout():
     flash("Logout berhasil.", "info")
     return redirect(url_for("index"))
 
+# ====== Simple register route (for local testing only) ======
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    """
+    Simple register page for testing.
+    Writes (or updates) users.json in DATA_DIR.
+    WARNING: For testing only. Remove or protect this in production.
+    """
     if request.method == "POST":
-        username = request.form.get("username").strip()
-        password = request.form.get("password").strip()
-        confirm  = request.form.get("confirm").strip()
+        username = (request.form.get("username") or "").strip()
+        password = (request.form.get("password") or "").strip()
+        confirm  = (request.form.get("confirm")  or "").strip()
 
+        # basic validation
         if not username or not password:
             flash("Username dan password harus diisi.", "warning")
             return redirect(url_for("register"))
+
         if password != confirm:
-            flash("Konfirmasi password tidak cocok.", "warning")
+            flash("Password dan konfirmasi tidak cocok.", "warning")
             return redirect(url_for("register"))
 
         users = load_users()
-        if any(u["username"] == username for u in users):
-            flash("Username sudah digunakan.", "danger")
+        if any(u.get("username") == username for u in users):
+            flash("Username sudah terdaftar. Gunakan username lain.", "danger")
             return redirect(url_for("register"))
 
         users.append({
             "username": username,
-            "password_hash": generate_password_hash(password),
-            "created_at": datetime.datetime.now().isoformat()
+            "password_hash": generate_password_hash(password)
         })
         save_users(users)
 
-        # 🧩 Buat folder data user baru
-        user_dir = os.path.join(DATA_DIR, username)
-        for sub in ["history", "reports"]:
-            os.makedirs(os.path.join(user_dir, sub), exist_ok=True)
-
-        # Buat file dasar
-        for f in ["income.json", "cashflow.json", "investment.json",
-                  "emergency.json", "buffer.json", "investment_reduce.json"]:
-            open(os.path.join(user_dir, f), "w").write("[]")
-
-        # 🧩 Buat settings.json default per user
-        settings = {
-            "currency": "IDR",
-            "theme": "light",
-            "language": "id",
-            "created_at": datetime.datetime.now().isoformat()
-        }
-        with open(os.path.join(user_dir, "settings.json"), "w") as f:
-            json.dump(settings, f, indent=4, ensure_ascii=False)
-
-        flash(f"User '{username}' berhasil dibuat. Silakan login.", "success")
-        return redirect(url_for("login"))
+        flash(f"User '{username}' berhasil didaftarkan. Silakan login.", "success")
+        return redirect(url_for("index"))
 
     return render_template("register.html")
-
 
 
 # ---------- RUN ----------

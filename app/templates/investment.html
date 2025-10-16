@@ -8,16 +8,41 @@
 </head>
 <body class="page-investment">
 
-<header>
-  <h1>BUKABOX — Investment & Portfolio</h1>
-  <nav>
-  <a href="{{ url_for('index') }}">🏠 Dashboard</a>
-  <a href="{{ url_for('investment_panel') }}" class="active">💹 Investment</a>
-</nav>
-  <p>{{ today }}</p>
+<!-- Header -->
+<header class="navbar">
+  <div class="content-wrap nav-inner">
+    <!-- Kiri: Logo -->
+    <div class="nav-left">
+      <span class="logo">💼 BUKABOX <small>— Financial Intelligence Dashboard</small></span>
+    </div>
+
+    <!-- Tombol Burger -->
+    <button class="nav-toggle" id="navToggle" aria-label="toggle menu" aria-expanded="false">☰</button>
+
+    <!-- Menu Navigasi -->
+    <nav class="nav-menu" id="navMenu">
+      <a href="{{ url_for('index') }}" class="btn-nav">Dashboard</a>
+      <a class="btn-nav active" href="{{ url_for('investment_panel') }}">Investment</a>
+      {% if not session.get('logged_in') %}
+        <a href="#" id="loginBtn" class="btn-nav">Login</a>
+      {% else %}
+        <a href="{{ url_for('logout') }}" class="btn-nav highlight">Logout</a>
+      {% endif %}
+      <a class="btn-nav" href="{{ url_for('save_month_snapshot') }}">Rekap Bulanan</a>
+    </nav>
+  </div>
 </header>
+
 <section id="invest-overview" class="invest_chart">
-    <div class="left"><canvas id="investChart"></canvas></div>
+    <div class="left">
+      <canvas id="investChart"
+  data-crypto="{{ inv_crypto }}"
+  data-gold="{{ inv_gold }}"
+  data-land="{{ inv_land }}"
+  data-business="{{ inv_business }}"
+  data-stock="{{ inv_stock or 0 }}">
+</canvas>
+    </div>
     <div class="right">
       <h2>Investment Allocation</h2>
       <table>
@@ -38,7 +63,7 @@
     <!-- CRYPTO -->
     <div id="crypto-detail" class="tab-content full active">
       <h3>Crypto Assets</h3>
-
+{% if session.get('logged_in') %}
       <form method="post" action="{{ url_for('add_invest') }}">
   <input type="hidden" name="category" value="crypto">
   <input type="text" name="asset" placeholder="Token (BTC, ETH, dll)">
@@ -49,6 +74,8 @@
   <input type="text" name="note" placeholder="Catatan (misal operasional/anak)">
   <button type="submit">Tambah</button>
 </form>
+
+  {% endif %}
 <!-- ===== TABEL CRYPTO ASSETS ===== -->
 <!-- DEBUG COUNT -->
 <p style="color:red;">DEBUG: {{ investment|length }} data ditemukan</p>
@@ -188,6 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <!-- GOLD -->
     <div id="gold-detail" class="tab-content full">
       <h3>Gold Holdings</h3>
+{% if session.get('logged_in') %}
       <form method="post" action="{{ url_for('add_gold') }}">
   <input type="hidden" name="category" value="gold">
   <input type="text" name="asset" placeholder="Gold Antam / UBS">
@@ -199,6 +227,8 @@ document.addEventListener("DOMContentLoaded", () => {
   <input type="text" name="note" placeholder="Catatan">
   <button type="submit">Tambah</button>
 </form>
+
+  {% endif %}
     <table class="gold-table">
   <thead>
     <tr>
@@ -233,6 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <!-- LAND -->
     <div id="land-detail" class="tab-content full">
       <h3>Land Investment</h3>
+      {% if session.get('logged_in') %}
       <form method="post" action="{{ url_for('add_land') }}">
   <input type="hidden" name="category" value="land">
   <input type="text" name="type" placeholder="Type (tanah, rumah, sawah)">
@@ -244,6 +275,7 @@ document.addEventListener("DOMContentLoaded", () => {
   <button type="submit">Simpan</button>
 </form>
 
+  {% endif %}
       <table class="land-table">
         <tr><th>Type</th><th>Tanggal</th><th>Harga/Ubin</th><th>Modal (IDR)</th><th>Luas (m²)</th><th>Keterangan</th></tr>
         {% for x in investment if x.category=='land' %}
@@ -256,6 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <!-- BUSINESS -->
     <div id="business-detail" class="tab-content full">
       <h3>Business Capital</h3>
+      {% if session.get('logged_in') %}
       <form method="post" action="{{ url_for('add_business') }}">
         <input type="hidden" name="category" value="business">
         <input type="text" name="asset" placeholder="Nama Bisnis">
@@ -265,6 +298,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <input type="text" name="note" placeholder="Keterangan">
         <button type="submit">Simpan</button>
       </form>
+      
+  {% endif %}
       <table class="business-table">
         <tr><th>Bisnis</th><th>Tanggal</th><th>Nilai Unit</th><th>Modal</th><th>Keterangan</th></tr>
         {% for x in investment if x.category=='business' %}
@@ -277,6 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <!-- STOCK -->
     <div id="stock-detail" class="tab-content full">
       <h3>Stock Portfolio</h3>
+      {% if session.get('logged_in') %}
       <form method="post" action="{{ url_for('add_stock') }}">
   <input type="hidden" name="category" value="stock">
   <input type="text" name="asset" placeholder="Emiten (BBCA, BBRI, dll)">
@@ -288,6 +324,7 @@ document.addEventListener("DOMContentLoaded", () => {
   <button type="submit">Tambah</button>
 </form>
 
+  {% endif %}
       <table class="stock-table">
         <tr><th>Emiten</th><th>Tanggal</th><th>Harga Beli</th><th>Modal</th><th>Lot</th><th>Valuasi</th><th>PNL%</th></tr>
         {% for x in investment if x.category=='stock' %}
@@ -302,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <!-- REBALANCE FORM -->
     <hr>
     <h3 class="reduce-title">💱 Kurangi Dana Investasi (Rebalance)</h3>
-
+{% if session.get('logged_in') %}
 <form action="/reduce_invest" method="POST" class="reduce-form mt-3">
   <label class="reduce-label">Pilih Aset</label>
   <select name="asset" class="dropdown">
@@ -315,7 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
   <input type="text" name="note" placeholder="Catatan (opsional)">
   <button type="submit" class="btn-reduce">Kurangi Dana</button>
 </form>
-
+  {% endif %}
 {% if investment_reduce %}
   <h4 class="reduce-subtitle mt-4">Riwayat Pengurangan Dana</h4>
   <table class="table table-bordered reduce-table">
@@ -339,134 +376,8 @@ document.addEventListener("DOMContentLoaded", () => {
   </section>
 </div>
 
-<footer><p>BUKABOX Studio — Machine Uang Progresif v4.3-Sync</p></footer>
+<footer><p>© 2025 PT BUKABOX CREATIVE STUDIO</p></footer>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
-<script>
-// ======================= CHART INVESTASI =======================
-new Chart(document.getElementById('investChart'), {
-  type: 'doughnut',
-  data: {
-    labels: ['Crypto', 'Gold', 'Land', 'Business', 'Stock'],
-    datasets: [{
-      data: [{{ inv_crypto }}, {{ inv_gold }}, {{ inv_land }}, {{ inv_business }}, {{ inv_stock or 0 }}],
-      backgroundColor: ['#B8E4C9', '#FCE0A2', '#D7BCE8', '#F4C7B8', '#A5C8E4'],
-      cutout: '60%'
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: true,
-    plugins: { legend: { position: 'bottom' } }
-  }
-});
-
-/* Formatter uang — hanya bersihkan input.money saja saat submit */
-document.addEventListener("DOMContentLoaded",()=>{
-  const moneyInputs = document.querySelectorAll("input.money");
-  moneyInputs.forEach(inp=>{
-    inp.addEventListener("input",()=>{
-      const pos=inp.selectionStart;
-      const val=inp.value.replace(/\D/g,"");
-      const fmt=val.replace(/\B(?=(\d{3})+(?!\d))/g,".");
-      inp.value=fmt;
-      const newPos=pos+(fmt.length-val.length);
-      inp.setSelectionRange(newPos,newPos);
-    });
-  });
-  // hanya bersihkan input.money, bukan semua input dalam form
-  document.querySelectorAll("form").forEach(form=>{
-    form.addEventListener("submit",()=>{
-      form.querySelectorAll("input.money").forEach(m=>{
-        m.value = m.value.replace(/\./g,"");
-      });
-    });
-  });
-});
-
-
-// ======================= PARSE ANGKA =======================
-function parseNumber(str) {
-  if (!str) return 0;
-  return parseFloat(str.toString().replace(/\./g, '').replace(',', '.')) || 0;
-}
-
-// ======================= CALCULATION FUNCTIONS =======================
-function calcCryptoAmount() {
-  const idr = parseNumber(document.getElementById('crypto_idr')?.value);
-  const price = parseNumber(document.getElementById('crypto_price')?.value);
-  document.getElementById('crypto_total').value = price > 0 ? (idr / price).toFixed(6) : 0;
-}
-
-function calcGoldGram() {
-  const idr = parseNumber(document.getElementById('gold_idr')?.value);
-  const price = parseNumber(document.getElementById('gold_price')?.value);
-  const gram = price > 0 ? idr / price : 0;
-  document.getElementById('gold_total').value = gram.toFixed(2);
-
-  // Hitung valuasi realtime jika variabel gold dikirim dari Flask
-  {% if gold %}
-  const currentGold = {{ gold|tojson }};
-  const goldValInput = document.getElementById('gold_value');
-  if (goldValInput) goldValInput.value = (gram * currentGold).toLocaleString('id-ID');
-  {% endif %}
-}
-
-function calcStockLot() {
-  const idr = parseNumber(document.getElementById('stock_idr')?.value);
-  const price = parseNumber(document.getElementById('stock_price')?.value);
-  const lot = price > 0 ? idr / (price * 100) : 0;
-  document.getElementById('stock_total').value = lot.toFixed(2);
-}
-
-function calcLandValue() {
-  const ubin = parseNumber(document.getElementById('land_ubin')?.value);
-  const price = parseNumber(document.getElementById('land_price')?.value);
-  const total = ubin * price;
-  document.getElementById('land_total').value = total > 0 ? total.toLocaleString('id-ID') : 0;
-}
-
-// ======================= DETAIL TOGGLER =======================
-function toggleDetail(id) {
-  document.getElementById(id).classList.toggle("open");
-}
-function openDetail(t) {
-  document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
-  const el = document.getElementById(t + '-detail');
-  if (el) el.classList.add('active');
-  document.getElementById('asset-detail').scrollIntoView({ behavior: 'smooth' });
-}
-
-// ======================= EVENT BINDINGS =======================
-document.addEventListener("DOMContentLoaded", () => {
-  // Crypto
-  const cryptoInputs = ['crypto_idr', 'crypto_price'];
-  cryptoInputs.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('blur', calcCryptoAmount);
-  });
-
-  // Gold
-  const goldInputs = ['gold_idr', 'gold_price'];
-  goldInputs.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('blur', calcGoldGram);
-  });
-
-  // Stock
-  const stockInputs = ['stock_idr', 'stock_price'];
-  stockInputs.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('blur', calcStockLot);
-  });
-
-  // Land
-  const landInputs = ['land_ubin', 'land_price'];
-  landInputs.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('blur', calcLandValue);
-  });
-});
-</script>
- 
 </body>
 </html>

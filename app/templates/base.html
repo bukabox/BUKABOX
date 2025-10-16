@@ -9,14 +9,30 @@
   
 </head>
 <body>
-  <header>
-    <h1>BUKABOX — Financial Intelligence Dashboard</h1>
-    <nav>
-      <a href="{{ url_for('index') }}">🏠 Dashboard</a>
-      <a href="{{ url_for('investment_panel') }}">💹 Investment</a>
+  <!-- Header -->
+<header class="navbar">
+  <div class="content-wrap nav-inner">
+    <!-- Kiri: Logo -->
+    <div class="nav-left">
+      <span class="logo">💼 BUKABOX <small>— Financial Intelligence Dashboard</small></span>
+    </div>
+
+    <!-- Tombol Burger -->
+    <button class="nav-toggle" id="navToggle" aria-label="toggle menu" aria-expanded="false">☰</button>
+
+    <!-- Menu Navigasi -->
+    <nav class="nav-menu" id="navMenu">
+      <a href="{{ url_for('index') }}" class="btn-nav active">Dashboard</a>
+      <a class="btn-nav" href="{{ url_for('investment_panel') }}">Investment</a>
+      {% if not session.get('logged_in') %}
+        <a href="#" id="loginBtn" class="btn-nav">Login</a>
+      {% else %}
+        <a href="{{ url_for('logout') }}" class="btn-nav highlight">Logout</a>
+      {% endif %}
+      <a class="btn-nav" href="{{ url_for('save_month_snapshot') }}">Rekap Bulanan</a>
     </nav>
-    <p>{{ today }}</p>
-  </header>
+  </div>
+</header>
 
   <main>
     {% block content %}{% endblock %}
@@ -26,5 +42,7 @@
     <p>© 2025 PT BUKABOX CREATIVE STUDIO</p>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
 </body>
 </html>

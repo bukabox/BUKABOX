@@ -1,0 +1,401 @@
+<script>
+// ======================= CHART INVESTASI =======================
+new Chart(document.getElementById('investChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Crypto', 'Gold', 'Land', 'Business', 'Stock'],
+    datasets: [{
+      data: [{{ inv_crypto }}, {{ inv_gold }}, {{ inv_land }}, {{ inv_business }}, {{ inv_stock or 0 }}],
+      backgroundColor: ['#B8E4C9', '#FCE0A2', '#D7BCE8', '#F4C7B8', '#A5C8E4'],
+      cutout: '60%'
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: { legend: { position: 'bottom' } }
+  }
+});
+
+/* Formatter uang — hanya bersihkan input.money saja saat submit */
+document.addEventListener("DOMContentLoaded",()=>{
+  const moneyInputs = document.querySelectorAll("input.money");
+  moneyInputs.forEach(inp=>{
+    inp.addEventListener("input",()=>{
+      const pos=inp.selectionStart;
+      const val=inp.value.replace(/\D/g,"");
+      const fmt=val.replace(/\B(?=(\d{3})+(?!\d))/g,".");
+      inp.value=fmt;
+      const newPos=pos+(fmt.length-val.length);
+      inp.setSelectionRange(newPos,newPos);
+    });
+  });
+  // hanya bersihkan input.money, bukan semua input dalam form
+  document.querySelectorAll("form").forEach(form=>{
+    form.addEventListener("submit",()=>{
+      form.querySelectorAll("input.money").forEach(m=>{
+        m.value = m.value.replace(/\./g,"");
+      });
+    });
+  });
+});
+
+
+// ======================= PARSE ANGKA =======================
+function parseNumber(str) {
+  if (!str) return 0;
+  return parseFloat(str.toString().replace(/\./g, '').replace(',', '.')) || 0;
+}
+
+// ======================= CALCULATION FUNCTIONS =======================
+function calcCryptoAmount() {
+  const idr = parseNumber(document.getElementById('crypto_idr')?.value);
+  const price = parseNumber(document.getElementById('crypto_price')?.value);
+  document.getElementById('crypto_total').value = price > 0 ? (idr / price).toFixed(6) : 0;
+}
+
+function calcGoldGram() {
+  const idr = parseNumber(document.getElementById('gold_idr')?.value);
+  const price = parseNumber(document.getElementById('gold_price')?.value);
+  const gram = price > 0 ? idr / price : 0;
+  document.getElementById('gold_total').value = gram.toFixed(2);
+
+  // Hitung valuasi realtime jika variabel gold dikirim dari Flask
+  {% if gold %}
+  const currentGold = {{ gold|tojson }};
+  const goldValInput = document.getElementById('gold_value');
+  if (goldValInput) goldValInput.value = (gram * currentGold).toLocaleString('id-ID');
+  {% endif %}
+}
+
+function calcStockLot() {
+  const idr = parseNumber(document.getElementById('stock_idr')?.value);
+  const price = parseNumber(document.getElementById('stock_price')?.value);
+  const lot = price > 0 ? idr / (price * 100) : 0;
+  document.getElementById('stock_total').value = lot.toFixed(2);
+}
+
+function calcLandValue() {
+  const ubin = parseNumber(document.getElementById('land_ubin')?.value);
+  const price = parseNumber(document.getElementById('land_price')?.value);
+  const total = ubin * price;
+  document.getElementById('land_total').value = total > 0 ? total.toLocaleString('id-ID') : 0;
+}
+
+// ======================= DETAIL TOGGLER =======================
+function toggleDetail(id) {
+  document.getElementById(id).classList.toggle("open");
+}
+function openDetail(t) {
+  document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+  const el = document.getElementById(t + '-detail');
+  if (el) el.classList.add('active');
+  document.getElementById('asset-detail').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ======================= EVENT BINDINGS =======================
+document.addEventListener("DOMContentLoaded", () => {
+  // Crypto
+  const cryptoInputs = ['crypto_idr', 'crypto_price'];
+  cryptoInputs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('blur', calcCryptoAmount);
+  });
+
+  // Gold
+  const goldInputs = ['gold_idr', 'gold_price'];
+  goldInputs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('blur', calcGoldGram);
+  });
+
+  // Stock
+  const stockInputs = ['stock_idr', 'stock_price'];
+  stockInputs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('blur', calcStockLot);
+  });
+
+  // Land
+  const landInputs = ['land_ubin', 'land_price'];
+  landInputs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('blur', calcLandValue);
+  });
+});
+</script>
+ <script>
+(() => {
+  const btn = document.getElementById('navToggle');
+  const menu = document.getElementById('navMenu');
+
+  function closeMenu() {
+    menu.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
+  }
+
+  btn.addEventListener('click', () => {
+    const isOpen = menu.classList.toggle('open');
+    btn.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  // Tutup bila klik di luar menu
+  document.addEventListener('click', (e) => {
+    if (!menu.contains(e.target) && !btn.contains(e.target)) closeMenu();
+  });
+
+  // Tutup bila tekan ESC
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMenu();
+  });
+
+  // Reset saat layar diperbesar
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 900) closeMenu();
+  });
+})();
+</script>
+<script>
+function calcCryptoAmount(){
+  const idr=parseFloat(document.getElementById('crypto_idr').value.replace(/\./g,''))||0;
+  const price=parseFloat(document.getElementById('crypto_price').value.replace(/\./g,''))||0;
+  document.getElementById('crypto_total').value=price>0?(idr/price).toFixed(6):0;
+}
+function calcGoldGram(){
+  const idr=parseFloat(document.getElementById('gold_idr').value.replace(/\./g,''))||0;
+  const price=parseFloat(document.getElementById('gold_price').value.replace(/\./g,''))||0;
+  document.getElementById('gold_total').value=price>0?(idr/price).toFixed(2):0;
+}
+function calcStockLot(){
+  const idr=parseFloat(document.getElementById('stock_idr').value.replace(/\./g,''))||0;
+  const price=parseFloat(document.getElementById('stock_price').value.replace(/\./g,''))||0;
+  document.getElementById('stock_total').value=price>0?(idr/(price*100)).toFixed(2):0;
+}
+function calcLandValue(){
+  const ubin=parseFloat(document.getElementById('land_ubin').value)||0;
+  const price=parseFloat(document.getElementById('land_price').value.replace(/\./g,''))||0;
+  document.getElementById('land_total').value=(ubin*price).toFixed(0);
+}
+function toggleDetail(id){document.getElementById(id).classList.toggle("open");}
+function openDetail(t){document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
+  const el=document.getElementById(t+'-detail');if(el){el.classList.add('active');}
+  document.getElementById('asset-detail').scrollIntoView({behavior:'smooth'});}
+document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll("input.money").forEach(inp=>{
+  inp.addEventListener("input",()=>{const pos=inp.selectionStart;const val=inp.value.replace(/\D/g,"");
+  const fmt=val.replace(/\B(?=(\d{3})+(?!\d))/g,".");inp.value=fmt;
+  const newPos=pos+(fmt.length-val.length);inp.setSelectionRange(newPos,newPos);});
+  const form=inp.closest("form");if(form){form.addEventListener("submit",()=>{inp.value=inp.value.replace(/\./g,"");});}});});
+</script>
+<script>
+const commonOpt = {
+  responsive:true,
+  maintainAspectRatio:true,
+  aspectRatio:1,
+  plugins:{
+    legend:{ position:'bottom', labels:{ font:{size:13}, color:'#333' } },
+    tooltip:{
+      callbacks:{
+        label:function(context){
+          const dataset=context.dataset;
+          const total=dataset.data.reduce((a,b)=>a+b,0);
+          const val=dataset.data[context.dataIndex];
+          const percent=((val/total)*100).toFixed(1);
+          return `${context.label}: ${percent}%`;
+        }
+      }
+    }
+  }
+};
+
+/* ───── Income Chart ───── */
+new Chart(document.getElementById('incomeChart'),{
+  type:'doughnut',
+  data:{
+    labels:[{% for i in income %}'{{ i.stream }}',{% endfor %}],
+    datasets:[{
+      data:[{% for i in income %}{{ i.amount }},{% endfor %}],
+      backgroundColor:['#B8E4C9','#A5C8E4','#F4C7B8','#EAD1DC'],
+      cutout:'60%'
+    }]
+  },
+  options:commonOpt
+});
+
+/* ───── Cashflow Chart ───── */
+new Chart(document.getElementById('cashflowChart'), {
+  type: 'pie',
+  data: {
+    labels: ['Income', 'Expense', 'Investment', 'Buffer'],
+    datasets: [{
+      data: [{{ total_income }}, {{ total_expense }}, {{ total_invest_month }}, {{ buffer_balance }}],
+      backgroundColor: ['#A5C8E4','#F4C7B8','#B8E4C9','#C6E2B3']
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 1,
+    plugins: {
+      legend: { position: 'bottom' },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const total = context.dataset.data.reduce((a,b)=>a+b,0);
+            const value = context.raw;
+            const percent = ((value/total)*100).toFixed(1);
+            // format angka menjadi ribuan dengan titik
+            const formatted = value.toLocaleString('id-ID');
+            return `${context.label}: Rp ${formatted} (${percent}%)`;
+          }
+        }
+      }
+    }
+  }
+});
+
+/* ───── Investment Chart ───── */
+new Chart(document.getElementById('investChart'),{
+  type:'doughnut',
+  data:{
+    labels:['Crypto','Gold','Land','Business','Stock'],
+    datasets:[{
+      data:[{{ inv_crypto }},{{ inv_gold }},{{ inv_land }},{{ inv_business }},{{ inv_stock or 0 }}],
+      backgroundColor:['#B8E4C9','#FCE0A2','#D7BCE8','#F4C7B8','#A5C8E4'],
+      cutout:'60%'
+    }]
+  },
+  options:commonOpt
+});
+</script>
+
+
+<div style="position:fixed;top:20px;right:20px;z-index:100;">
+  
+  <a href="{{ url_for('save_month_snapshot') }}" style="background:#92B6E8;color:white;padding:10px 16px;border-radius:6px;text-decoration:none;font-weight:600;box-shadow:0 2px 5px rgba(0,0,0,0.2);">📜 Rekap Bulanan</a>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const cols = [
+    document.getElementById("col1"),
+    document.getElementById("col2")
+  ];
+  const cards = Array.from(document.querySelectorAll("section.card"));
+
+  // kalau layar kecil, reset semua card ke satu kontainer
+  if (window.innerWidth < 900) {
+    const container = document.getElementById("cardContainer");
+    cards.forEach(card => container.appendChild(card));
+    return; // jangan lanjut masonry
+  }
+
+  // jalankan masonry normal di layar besar
+  cards.forEach((card) => {
+    const shorter = cols.reduce((a, b) =>
+      a.offsetHeight < b.offsetHeight ? a : b
+    );
+    shorter.appendChild(card);
+  });
+});
+</script>
+
+  
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const loginModal = document.getElementById("loginModal");
+  const registerModal = document.getElementById("registerModal");
+  const loginBtn = document.getElementById("loginBtn");
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
+  const loginMsg = document.getElementById("loginMsg");
+  const registerMsg = document.getElementById("registerMsg");
+
+  // buka login popup
+  loginBtn?.addEventListener("click", () => {
+    loginModal.style.display = "flex";
+  });
+
+  // switch antar modal
+  document.getElementById("showRegister")?.addEventListener("click", (e)=>{
+    e.preventDefault();
+    loginModal.style.display = "none";
+    registerModal.style.display = "flex";
+  });
+  document.getElementById("showLogin")?.addEventListener("click", (e)=>{
+    e.preventDefault();
+    registerModal.style.display = "none";
+    loginModal.style.display = "flex";
+  });
+
+  // tutup jika klik di luar kotak
+  document.querySelectorAll(".modal").forEach(modal => {
+    modal.addEventListener("click", e=>{
+      if(e.target === modal) modal.style.display = "none";
+    });
+  });
+
+  // handle login (AJAX)
+  loginForm?.addEventListener("submit", async e => {
+    e.preventDefault();
+    loginMsg.textContent = "Memeriksa...";
+    const data = new FormData(loginForm);
+    const res = await fetch("{{ url_for('login') }}", { method: "POST", body: data });
+    const result = await res.json();
+    if (result.success) {
+      loginMsg.textContent = "Login berhasil...";
+      setTimeout(()=>window.location.reload(), 800);
+    } else {
+      loginMsg.textContent = "Username atau password salah.";
+    }
+  });
+
+  // handle register (AJAX)
+  registerForm?.addEventListener("submit", async e => {
+    e.preventDefault();
+    registerMsg.textContent = "Mendaftarkan...";
+    const data = new FormData(registerForm);
+    const res = await fetch("{{ url_for('register') }}", { method: "POST", body: data });
+    if(res.redirected){ window.location.href=res.url; return; }
+    try{
+      const result = await res.json();
+      registerMsg.textContent = result.success ? "Registrasi berhasil!" : "Gagal mendaftar.";
+    }catch{
+      registerMsg.textContent = "Registrasi selesai. Silakan login.";
+      setTimeout(()=>{
+        registerModal.style.display="none";
+        loginModal.style.display="flex";
+      },1000);
+    }
+  });
+});
+</script>
+<script>
+(() => {
+  const btn = document.getElementById('navToggle');
+  const menu = document.getElementById('navMenu');
+
+  function closeMenu() {
+    menu.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
+  }
+
+  btn.addEventListener('click', () => {
+    const isOpen = menu.classList.toggle('open');
+    btn.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  // Tutup bila klik di luar menu
+  document.addEventListener('click', (e) => {
+    if (!menu.contains(e.target) && !btn.contains(e.target)) closeMenu();
+  });
+
+  // Tutup bila tekan ESC
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMenu();
+  });
+
+  // Reset saat layar diperbesar
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 900) closeMenu();
+  });
+})();
+</script>

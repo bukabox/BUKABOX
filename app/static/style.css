@@ -60,52 +60,114 @@ header h1 {
 }
 
 /* ===== NAVIGATION TABS ===== */
-header nav {
-  display: inline-flex;
-  gap: 14px;
-  background: #f7f7f7;
-  border-radius: 8px;
-  padding: 6px 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+/* --- NAVBAR BASE --- */
+.content-wrap {
+  max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 16px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;  
+    height: 60px;
+    align-items: center;     
 }
-
-header nav a {
-  text-decoration: none;
-  font-weight: 600;
-  color: #555;
-  background: #fff;
-  padding: 6px 14px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  transition: all 0.25s ease;
+.navbar {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 4px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  transition: all 0.3s ease;
 }
 
-header nav a:hover {
-  background: #e9f3ff;
-  border-color: #c1dcff;
-  color: #1a66d4;
+.nav-left .logo {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #333;
 }
 
-header nav a.active {
-  background: #1a66d4;
+.nav-left small {
+  font-weight: 400;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* --- NAV MENU --- */
+.nav-menu {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-nav {
+  text-decoration: none;
+  background: #f4f4f4;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #333;
+  transition: 0.2s;
+}
+
+.btn-nav:hover {
+  background: #e8e8e8;
+}
+
+.btn-nav.active {
+  background: #007bff;
   color: #fff;
-  border-color: #1a66d4;
-  box-shadow: 0 2px 6px rgba(26,102,212,0.2);
 }
 
-/* Emoji icons look aligned */
-header nav a span {
-  vertical-align: middle;
+.btn-nav.highlight {
+  background: #50c878;
+  color: #fff;
 }
 
-/* Date below header */
-header p {
-  font-size: 13px;
-  margin-top: 6px;
-  color: #777;
+/* --- BURGER BUTTON --- */
+.nav-toggle {
+  display: none;
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  color: #333;
+  cursor: pointer;
+}
+
+/* --- MOBILE --- */
+@media (max-width: 900px) {
+  .nav-toggle {
+    display: block;
+  }
+
+  .nav-menu {
+    position: absolute;
+    top: 65px;
+    left: 0;
+    right: 0;
+    background: #fff;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 20px 0;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: scaleY(0);
+    transform-origin: top;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+
+  .nav-menu.open {
+    transform: scaleY(1);
+    opacity: 1;
+    pointer-events: all;
+  }
 }
 
 
@@ -1026,10 +1088,139 @@ table.full-width .empty {
   justify-content: space-between;
   gap: 16px;
 }
+.alert-warning{
+  background:#fff3cd;
+  color:#856404;
+  padding:10px;
+  margin:10px 0;
+  border-radius:6px;
+  text-align:center;
+}
+
+.modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(3px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.25s ease forwards;
+}
+
+@keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+
+/* ======= Modal Card ======= */
+.modal-card {
+  background: #ffffff;
+  border-radius: 14px;
+  width: 320px;
+  padding: 28px 26px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+  text-align: center;
+  transform: translateY(-15px);
+  animation: slideUp 0.3s ease forwards;
+}
+
+@keyframes slideUp { to {transform: translateY(0);} }
+
+.modal-card h2 {
+  font-size: 1.3rem;
+  margin-bottom: 18px;
+  font-weight: 600;
+  color: #222;
+}
+
+/* ======= Input ======= */
+.modal-card input {
+  width: 100%;
+  margin: 8px 0;
+  padding: 10px;
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+  background: #fafafa;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+.modal-card input:focus {
+  background: #fff;
+  border-color: #333;
+}
+
+/* ======= Button ======= */
+.modal-card button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #2c2c2c;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.modal-card button:hover {
+  background: #444;
+}
+
+/* ======= Text & Link ======= */
+.modal-card p {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #555;
+}
+.modal-card .switch a {
+  color: #007bff;
+  text-decoration: none;
+}
+.modal-card .switch a:hover {
+  text-decoration: underline;
+}
+.modal-card input,
+.modal-card button {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 14px;
+  height: 40px;               /* ✅ samakan tinggi input & button */
+  line-height: 40px;          /* ✅ sejajarkan teks vertikal */
+  border-radius: 8px;
+  margin: 8px 0;
+  transition: all 0.2s ease;
+}
+
+/* Input style */
+.modal-card input {
+  padding: 0 12px;
+  border: 1px solid #e2e2e2;
+  background: #fafafa;
+  outline: none;
+}
+.modal-card input:focus {
+  border-color: #333;
+  background: #fff;
+}
+
+/* Tombol style */
+.modal-card button {
+  display: flex;
+    justify-content: center;
+    align-items: center;
+  border: none;
+  background: #2c2c2c;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.modal-card button:hover {
+  background: #444;
+}
 
 @media (max-width: 900px) {
   #cardContainer {
-    display: block;  /* satu kolom, no masonry */
+    display: flex;
+    flex-direction: column;
   }
 }
 

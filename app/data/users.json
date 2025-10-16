@@ -1,0 +1,15 @@
+[
+    {
+        "username": "admin",
+        "password_hash": ""
+    },
+    {
+        "username": "bukabox",
+        "password_hash": "scrypt:32768:8:1$KyzYL4JVpOASKtfB$c8afb1c51c47fc0d432542fd34a2e52f037f8013f1874c8bd138a489d5383cbf6efe56c13d13a054bb8064516d71e5ac9e978f8cdd9e452f0a673efd5f5ec30a"
+    },
+    {
+        "username": "ichi",
+        "password_hash": "scrypt:32768:8:1$SkOuzrYSLZbIiPnB$5ca4ec52eaa33a541c0896bc56fbd1110a4590a5079c322d8c3c16adccc31f7649a5d0f4925c92703159833a9a25fea3f4e168b2a4aad0de4e0ae16893f31590",
+        "created_at": "2025-10-16T17:25:24.159922"
+    }
+]

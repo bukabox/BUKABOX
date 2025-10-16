@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Login | Bukabox Dashboard</title>
+  <style>
+    body { font-family: sans-serif; background:#f4f6f8; display:flex; justify-content:center; align-items:center; height:100vh; }
+    .login-box { background:white; padding:30px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); width:320px; text-align:center; }
+    input { width:90%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:6px; }
+    button { background:#3498db; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; }
+    button:hover { background:#2980b9; }
+  </style>
+</head>
+<body>
+  <form method="POST" action="/login" class="login-box">
+    <h2>Masuk ke Dashboard</h2>
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <button type="submit">Login</button>
+    <p style="margin-top:15px;font-size:13px;">
+      Belum punya akun? <a href="/register">Daftar</a>
+    </p>
+  </form>
+</body>
+</html>

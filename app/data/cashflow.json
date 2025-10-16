@@ -1,1 +1,114 @@
-[]
+[
+  {
+    "date": "2025-10-16",
+    "type": "expense",
+    "category": "Dana Darurat",
+    "amount": 20000000.0,
+    "note": "Setoran 1"
+  },
+  {
+    "date": "2025-08-02",
+    "type": "expense",
+    "category": "Investment crypto",
+    "amount": 9999267.196416,
+    "note": ""
+  },
+  {
+    "date": "2025-08-16",
+    "type": "expense",
+    "category": "Investment crypto",
+    "amount": 10000621.02264,
+    "note": ""
+  },
+  {
+    "date": "2025-09-15",
+    "type": "expense",
+    "category": "Investment crypto",
+    "amount": 9999621.878428,
+    "note": ""
+  },
+  {
+    "date": "2025-08-11",
+    "type": "expense",
+    "category": "Investment crypto",
+    "amount": 1000000.0038689999,
+    "note": ""
+  },
+  {
+    "date": "2025-08-16",
+    "type": "expense",
+    "category": "Investment crypto",
+    "amount": 999999.993006,
+    "note": ""
+  },
+  {
+    "date": "2025-08-16",
+    "type": "expense",
+    "category": "Investment crypto",
+    "amount": 999999.00825,
+    "note": ""
+  },
+  {
+    "date": "2025-08-16",
+    "type": "expense",
+    "category": "Investment crypto",
+    "amount": 999999.989439,
+    "note": ""
+  },
+  {
+    "date": "2025-08-16",
+    "type": "expense",
+    "category": "Investment crypto",
+    "amount": 999965.50632,
+    "note": ""
+  },
+  {
+    "date": "2025-09-15",
+    "type": "expense",
+    "category": "Investment crypto",
+    "amount": 999995.8598300001,
+    "note": ""
+  },
+  {
+    "date": "2025-09-15",
+    "type": "expense",
+    "category": "Investment crypto",
+    "amount": 1000000.0002560001,
+    "note": ""
+  },
+  {
+    "date": "2025-09-15",
+    "type": "expense",
+    "category": "Investment crypto",
+    "amount": 999998.0293889999,
+    "note": ""
+  },
+  {
+    "date": "2025-09-15",
+    "type": "expense",
+    "category": "Investment crypto",
+    "amount": 999999.97668,
+    "note": ""
+  },
+  {
+    "date": "2025-09-15",
+    "type": "expense",
+    "category": "Investment crypto",
+    "amount": 1000000.001546,
+    "note": ""
+  },
+  {
+    "date": "2025-10-16",
+    "type": "expense",
+    "category": "Houshold",
+    "amount": 1000000.0,
+    "note": "Listrik"
+  },
+  {
+    "date": "2025-10-16",
+    "type": "expense",
+    "category": "Lain",
+    "amount": 50243.0,
+    "note": "Web Deployer"
+  }
+]
