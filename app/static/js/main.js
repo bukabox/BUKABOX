@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const el = document.getElementById('land_total');
     if (el) el.value = total > 0 ? total.toLocaleString('id-ID') : 0;
   };
-
+ 
   /* -------------------- Event Binding -------------------- */
   const bindBlur = (ids, fn) => ids.forEach(id => {
     const el = document.getElementById(id);
@@ -194,33 +194,48 @@ Chart.register({
   }
 
   /* -------------------- INVESTMENT CHART -------------------- */
-  const investCtx = document.getElementById("investChart");
-  if (investCtx) {
-    const data = [
-      parseFloat(investCtx.dataset.crypto || 0),
-      parseFloat(investCtx.dataset.gold || 0),
-      parseFloat(investCtx.dataset.land || 0),
-      parseFloat(investCtx.dataset.business || 0),
-      parseFloat(investCtx.dataset.stock || 0)
-    ];
-    const total = data.reduce((a, b) => a + b, 0);
-    if (total === 0) {
-      new Chart(investCtx, {
-        type: "doughnut",
-        data: { labels: ["Belum ada data"], datasets: [{ data: [1], backgroundColor: ["#d9d9d9"] }] },
-        options: { cutout: "60%", plugins: { legend: { display: false }, tooltip: { enabled: false } } }
-      });
-    } else {
-      new Chart(investCtx, {
-        type: "doughnut",
-        data: {
-          labels: ["Crypto", "Gold", "Land", "Business", "Stock"],
-          datasets: [{ data, backgroundColor: ["#B8E4C9","#FCE0A2","#D7BCE8","#F4C7B8","#A5C8E4"], cutout: "60%" }]
-        },
-        options: commonOpt
-      });
-    }
+  /* -------------------- INVESTMENT CHART -------------------- */
+const investCtx = document.getElementById("investChart");
+if (investCtx) {
+  const data = [
+    parseFloat(investCtx.dataset.crypto || 0),
+    parseFloat(investCtx.dataset.gold || 0),
+    parseFloat(investCtx.dataset.land || 0),
+    parseFloat(investCtx.dataset.business || 0),
+    parseFloat(investCtx.dataset.stock || 0),
+    parseFloat(investCtx.dataset.emergency || 0) // 🟩 tambahkan dana darurat
+  ];
+
+  const total = data.reduce((a, b) => a + b, 0);
+  if (total === 0) {
+    new Chart(investCtx, {
+      type: "doughnut",
+      data: { labels: ["Belum ada data"], datasets: [{ data: [1], backgroundColor: ["#d9d9d9"] }] },
+      options: { cutout: "60%", plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+    });
+  } else {
+    new Chart(investCtx, {
+      type: "doughnut",
+      data: {
+        labels: ["Crypto", "Gold", "Land", "Business", "Stock", "Emergency Fund"], // 🟩 tambahkan label baru
+        datasets: [{
+          data,
+          backgroundColor: [
+            "#B8E4C9", // Crypto
+            "#FCE0A2", // Gold
+            "#D7BCE8", // Land
+            "#F4C7B8", // Business
+            "#A5C8E4", // Stock
+            "#AED6F1"  // 🟩 Emergency Fund
+          ],
+          cutout: "60%"
+        }]
+      },
+      options: commonOpt
+    });
   }
+}
+
   /* -------------------- Toggle Detail Cashflow -------------------- */
   window.toggleDetail = function(id) {
     const box = document.getElementById(id);
@@ -231,5 +246,15 @@ Chart.register({
       box.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+/* ======================= DETAIL TOGGLER ======================= */
+  function toggleDetail(id) {
+    document.getElementById(id).classList.toggle("open");
+  }
+  function openDetail(t) {
+    document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+    const el = document.getElementById(t + '-detail');
+    if (el) el.classList.add('active');
+    document.getElementById('asset-detail').scrollIntoView({ behavior: 'smooth' });
+  }
 
 }); // END DOMContentLoaded

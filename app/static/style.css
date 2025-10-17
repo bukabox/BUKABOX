@@ -139,7 +139,7 @@ header h1 {
 }
 
 /* --- MOBILE --- */
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .nav-toggle {
     display: block;
   }
@@ -363,13 +363,14 @@ button:hover { background: var(--blue); color: #fff; }
 .tab-content.full tr:hover td {
   background: #f9f9f9;
 }
-
+.tab-footer-section {display:flex;justify-content: space-between;}
 /* â”€â”€â”€â”€â”€ Animation / global polish â”€â”€â”€â”€â”€ */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
+.total-summary {margin:10px 0 40px 0;text-align:left !important}
+.total-summary h2 {font-size:28px}
 html { scroll-behavior: smooth; }
 .chartjs-render-monitor { image-rendering: -webkit-optimize-contrast; }
 /* memastikan chart 1 dan 2 bulat sempurna */
@@ -379,6 +380,21 @@ html { scroll-behavior: smooth; }
   height: auto !important;
   margin: auto;
   display: block;
+}
+.upload-section {
+  margin-top: 15px;
+  padding: 10px;
+  border: 1px dashed #b5b5b5;
+  border-radius: 6px;
+  background: #fafafa;
+}
+.upload-section label {
+  font-size: 14px;
+  margin-bottom: 5px;
+  display: inline-block;
+}
+.upload-section input[type="file"] {
+  margin-right: 8px;
 }
 
 footer {

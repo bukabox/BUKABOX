@@ -25,6 +25,8 @@
       <a class="btn-nav active" href="{{ url_for('investment_panel') }}">Investment</a>
       {% if not session.get('logged_in') %}
         <a href="#" id="loginBtn" class="btn-nav">Login</a>
+      {% else %}
+        <a href="{{ url_for('logout') }}" class="btn-nav highlight">Logout</a>
       {% endif %}
       <a class="btn-nav" href="{{ url_for('save_month_snapshot') }}">Rekap Bulanan</a>
       <div class="user-banner">
@@ -49,16 +51,9 @@
   data-land="{{ inv_land }}"
   data-business="{{ inv_business }}"
   data-stock="{{ inv_stock or 0 }}">
-  data-emergency="{{ total_emergency }}">
 </canvas>
     </div>
     <div class="right">
-      <div class="total-summary" style="text-align:right;margin-bottom:10px;">
-  <h2>Total Assets: 
-    <span>{{ total_assets | idr }}</span>
-  </h2>
-</div>
-
       <h2>Investment Allocation</h2>
       <table>
         <tr><th>Asset Class</th><th>Total (IDR)</th></tr>
@@ -124,16 +119,9 @@
     </tr>
   {% endfor %}
 </table>
-<div class="tab-footer-section">
-<div class="upload-section">
-    <form action="{{ url_for('upload_investment_json') }}" method="POST" enctype="multipart/form-data">
-      <label for="file" style="font-weight:600;">Upload Data Investment JSON</label><br>
-      <input type="file" name="file" accept=".json" required>
-      <button type="submit" class="btn btn-secondary btn-sm">Upload</button>
-    </form>
-  </div>
+
 <div id="pagination" class="pagination-container"></div>
-</div>
+
 <!-- pindahkan pagination script di paling bawah -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -401,16 +389,16 @@ document.addEventListener("DOMContentLoaded", () => {
 <footer><p>© 2025 PT BUKABOX CREATIVE STUDIO</p></footer>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script>
-  // ======================= DETAIL TOGGLER =======================
-function toggleDetail(id) {
-  document.getElementById(id).classList.toggle("open");
-}
-function openDetail(t) {
-  document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
-  const el = document.getElementById(t + '-detail');
-  if (el) el.classList.add('active');
-  document.getElementById('asset-detail').scrollIntoView({ behavior: 'smooth' });
-}
+document.addEventListener("DOMContentLoaded", () => {
+  // Jika ada hash di URL (misal #crypto-detail), buka otomatis
+  const hash = window.location.hash.replace('#', '');
+  if (hash) {
+    document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+    const target = document.getElementById(hash);
+    if (target) target.classList.add('active');
+  }
+});
 </script>
+
 </body>
 </html>

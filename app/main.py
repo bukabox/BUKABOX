@@ -16,6 +16,24 @@ app = Flask(__name__)
 
 app.secret_key = os.getenv("FLASK_SECRET", "dev_secret")
 
+def user_data_path(username, filename):
+    """Path adaptif (lokal vs Fly.io)"""
+    # Path lokal
+    local_path = os.path.join(os.path.dirname(__file__), "data")
+    # Path Fly.io (mount)
+    fly_path = "/app/app/data"
+
+    if os.path.exists(local_path):
+        DATA_ROOT = local_path
+    elif os.path.exists(fly_path):
+        DATA_ROOT = fly_path
+    else:
+        # fallback terakhir agar tetap bisa jalan di dev
+        DATA_ROOT = os.path.abspath("app/data")
+
+    return os.path.join(DATA_ROOT, username, filename)
+
+
 # --- Custom Jinja Filters ---
 @app.template_filter('idr')
 def idr(value):
@@ -498,13 +516,14 @@ def investment_panel():
 
     investment = load_json("investment.json")
     investment_reduce = load_json("investment_reduce.json")
+    emergency = load_json("emergency.json")  # 🟩 tambahan
 
     # ambil harga-harga realtime
     crypto = get_crypto_prices()
-    gold_price = get_gold_price()  # ambil harga emas per gram
+    gold_price = get_gold_price()
     print("DEBUG GOLD PRICE =", gold_price)
 
-    # total porto per kategori
+    # --- total per kategori investasi utama ---
     inv_crypto = sum(x.get("current_value", x.get("amount_idr", 0))
                      for x in investment if x.get("category") == "crypto")
     inv_gold = sum(x.get("current_value", x.get("amount_idr", 0))
@@ -516,11 +535,15 @@ def investment_panel():
     inv_stock = sum(x.get("current_value", x.get("amount_idr", 0))
                     for x in investment if x.get("category") == "stock")
 
+    # 🟩 total dana darurat
+    total_emergency = sum(e.get("amount", 0) for e in emergency)
+
+    # 🟩 total portofolio + dana darurat
     total_port = inv_crypto + inv_gold + inv_land + inv_business + inv_stock
+    total_assets = total_port + total_emergency
 
-         # === CRYPTO ACCUMULATION SUMMARY (FIXED: pisah Anak & Operasional) ===
+    # === CRYPTO ACCUMULATION (pisah anak & operasional) ===
     tokens = {}
-
     for inv in investment:
         if inv.get("category") != "crypto":
             continue
@@ -528,13 +551,13 @@ def investment_panel():
         sym = inv.get("asset", "").upper().strip()
         note = (inv.get("note") or "").strip().lower()
 
-        # buat label gabungan supaya tiap sub-BTC terpisah
+        # label unik BTC
         if sym == "BTC" and note == "operasional":
             key = "BTC Operasional"
         elif sym == "BTC" and note == "anak":
             key = "BTC Anak"
         else:
-            key = sym  # default
+            key = sym
 
         curr_price = crypto.get(sym, 0)
         entry_amount = float(inv.get("entry_amount", 0))
@@ -570,35 +593,45 @@ def investment_panel():
             "current_value": round(t["current_value"], 2),
             "pnl": round(pnl, 2)
         })
-    # urutkan data terbaru di atas
-    investment = sorted(
-    investment,
-    key=lambda x: (
-        x.get("timestamp", ""),
-        x.get("date", "")
-    ),
-    reverse=True
-)
 
+    # urutkan data terbaru
+    investment = sorted(
+        investment,
+        key=lambda x: (x.get("timestamp", ""), x.get("date", "")),
+        reverse=True
+    )
 
     print(f"DEBUG INVESTMENT LEN = {len(investment)}")
     if len(investment) > 0:
         print("SAMPLE ITEM:", investment[0])
 
-    # kirim ke template
+    # 🟩 Buat dictionary alokasi chart (termasuk dana darurat)
+    asset_allocation = {
+        "Crypto": inv_crypto,
+        "Gold": inv_gold,
+        "Land": inv_land,
+        "Business": inv_business,
+        "Stock": inv_stock,
+        "Emergency Fund": total_emergency
+    }
+
+    # --- kirim ke template ---
     return render_template(
         "investment.html",
         today=today.isoformat(),
         investment=investment,
         investment_reduce=investment_reduce,
         crypto=crypto,
-        gold=gold_price,          # harga per gram dikirim ke template
+        gold=gold_price,
         inv_crypto=inv_crypto,
         inv_gold=inv_gold,
         inv_land=inv_land,
         inv_business=inv_business,
         inv_stock=inv_stock,
         total_port=total_port,
+        total_assets=total_assets,        # 🟩 total keseluruhan investasi+dana darurat
+        asset_allocation=asset_allocation, # 🟩 data pie chart gabungan
+        total_emergency=total_emergency,   # 🟩 dana darurat dikirim eksplisit juga
         crypto_accumulation=crypto_accumulation,
     )
 
@@ -743,6 +776,47 @@ def add_invest():
 
     return redirect(url_for("index"))
 
+@app.route("/upload_investment_json", methods=["POST"])
+def upload_investment_json():
+    username = session.get("username", "ichi")
+    file = request.files.get("file")
+
+    if not file or not file.filename.endswith(".json"):
+        flash("Upload file JSON valid dulu.", "danger")
+        return redirect(url_for("investment_panel"))
+
+    filepath = user_data_path(username, "investment.json")
+    print("=== DEBUG UPLOAD ===")
+    print("Saving to:", filepath)
+
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+
+    try:
+        file.seek(0)
+        new_data = json.load(file)
+        print("Loaded data type:", type(new_data))
+        if isinstance(new_data, list):
+            print("List length:", len(new_data))
+        else:
+            print("Top-level keys:", list(new_data.keys()))
+
+    except Exception as e:
+        print("Error loading JSON:", e)
+        flash(f"Gagal membaca file JSON: {e}", "danger")
+        return redirect(url_for("investment_panel"))
+
+    # Tulis langsung untuk uji pertama
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(new_data, f, indent=2)
+
+    flash("Data berhasil disimpan ke investment.json (tes awal)", "success")
+
+
+    print("=== DEBUG PATH ===")
+    print("Local exists:", os.path.exists(os.path.join(os.path.dirname(__file__), "data")))
+    print("Fly exists:", os.path.exists("/app/app/data"))
+    print("Final path:", user_data_path("ichi", "investment.json"))
+    return redirect(url_for("investment_panel"))
 
 # ---- CRYPTO ----
 @app.route("/add_crypto", methods=["POST"])

@@ -1,15 +1,6 @@
 {
-  "month": "2025-10",
-  "timestamp": "2025-10-16",
-  "summary": {
-    "income": 0,
-    "expense": 0,
-    "investment": 0,
-    "buffer": 0
-  },
-  "entries": {
-    "income": [],
-    "expense": [],
-    "investment": []
-  }
+  "summary": [],
+  "entries": [],
+  "crypto_accumulation": [],
+  "saved_at": "2025-10-17"
 }

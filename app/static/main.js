@@ -107,20 +107,12 @@ window.toggleDetail = function(id) {
   el.classList.toggle("open");
 };
 
-window.openDetail = function(tab) {
-  try {
-    document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
-    const target = document.getElementById(`${tab}-detail`);
-    if (target) {
-      target.classList.add('active');
-      document.getElementById('asset-detail')?.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      console.warn("openDetail: target not found:", `${tab}-detail`);
-    }
-  } catch (err) {
-    console.error("openDetail error:", err);
-  }
-};
+function openDetail(t) {
+  document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+  const el = document.getElementById(t + '-detail');
+  if (el) el.classList.add('active');
+  document.getElementById('asset-detail').scrollIntoView({ behavior: 'smooth' });
+}
 
 // =========================================================
 // CHART.JS — hanya jalan jika Chart ada & data tersedia
@@ -210,4 +202,5 @@ window.BUKABOX_OK = true;
 console.log("✅ main.js ready; globals:", {
   hasToggle: typeof window.toggleDetail === 'function',
   hasOpen: typeof window.openDetail === 'function'
+  
 });
