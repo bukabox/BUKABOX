@@ -1,8 +1,8 @@
 [
-  {
-    "date": "2025-10-15",
-    "stream": "LINE",
-    "amount": 68578123.0,
-    "note": "LINE Oct"
-  }
+    {
+        "date": "2025-10-19",
+        "stream": "line",
+        "amount": 10000000.0,
+        "note": ""
+    }
 ]

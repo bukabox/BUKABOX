@@ -1,32 +1,7 @@
 [
     {
-        "date": "2025-10-16",
-        "amount": 20000000.0,
-        "note": "Setoran 1"
-    },
-    {
-        "date": "2025-10-18",
-        "amount": 20000000.0,
-        "note": "nganu"
-    },
-    {
-        "date": "2025-10-18",
-        "amount": 20000000.0,
-        "note": "Setoran 1"
-    },
-    {
-        "date": "2025-10-18",
-        "amount": 20000000.0,
-        "note": "Setoran 1"
-    },
-    {
-        "date": "2025-10-18",
-        "amount": 1234.0,
-        "note": "nganu"
-    },
-    {
-        "date": "2025-10-18",
-        "amount": 1234.0,
-        "note": "nganu"
+        "date": "2025-10-19",
+        "amount": 2000000.0,
+        "note": "test"
     }
 ]

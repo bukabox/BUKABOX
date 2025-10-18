@@ -475,24 +475,38 @@ def index():
                 value = 0
             month_invest.append(value)
 
-    # === TOTAL DASAR ===
-    total_income = sum(i.get("amount", 0) for i in month_income)
-    total_expense = sum(c.get("amount", 0) for c in month_expense)
+        # === TOTAL DASAR ===
+    total_income = sum(float(i.get("amount", 0)) for i in month_income)
 
-    # === INVESTMENT ===
-    total_invest_month = sum(month_invest)
-
-    # Tambahkan investasi dari cashflow (termasuk Dana Darurat)
-    invest_from_cashflow = sum(
+    # === EXPENSE (SEMUA ALAIRAN KELUAR) ===
+    # Termasuk operasional, dana darurat, dan semua investasi
+    total_expense = sum(
         float(c.get("amount", 0))
         for c in cashflow
-        if c.get("type") == "investment" and c.get("category") != "Dana Darurat"
+        if c.get("type") in ["expense", "investment"]
     )
-    total_invest_month += invest_from_cashflow
+
+    # === OPERASIONAL SAJA (untuk breakdown tampilan) ===
+    total_expense_operasional = sum(
+        float(c.get("amount", 0))
+        for c in cashflow
+        if c.get("type") == "expense"
+    )
+
+    # === INVESTMENT & SAVING (Dana Darurat + Investasi) ===
+    total_investment_savings = sum(
+        float(c.get("amount", 0))
+        for c in cashflow
+        if c.get("type") == "investment"
+    )
 
     # === BUFFER (Active Balance) ===
-    buffer_balance = total_income - (total_expense + total_invest_month)
+    # income - expense (tidak double count)
+    buffer_balance = total_income - total_expense
     buffer_state = "positive" if buffer_balance >= 0 else "negative"
+
+
+
 
     # === CASHFLOW BREAKDOWN ===
     expense_operasional_categories = [
@@ -501,18 +515,6 @@ def index():
     investment_saving_categories = [
         "Investment crypto", "Dana Darurat", "Loan", "Paylater"
     ]
-
-    total_expense_operasional = sum(
-        float(c.get("amount", 0))
-        for c in cashflow
-        if c.get("category") in expense_operasional_categories
-    )
-
-    total_investment_savings = sum(
-        float(c.get("amount", 0))
-        for c in cashflow
-        if c.get("category") in investment_saving_categories
-    )
 
     # === PORTFOLIO VALUE ===
     inv_crypto = sum(
@@ -606,7 +608,7 @@ def index():
         emergency=emergency,
         total_income=total_income,
         total_expense=total_expense,
-        total_invest_month=total_invest_month,
+        total_invest_month=total_investment_savings,  # ← ubah sumber datanya langsung di sini
         total_port=total_port,
         inv_crypto=inv_crypto,
         inv_gold=inv_gold,
@@ -907,7 +909,7 @@ def add_invest():
     })
     save_json("cashflow.json", cash)
 
-    return redirect(url_for("index"))
+    return redirect(url_for("investment_panel"))
 
 
 @app.route("/upload_investment_json", methods=["POST"])
