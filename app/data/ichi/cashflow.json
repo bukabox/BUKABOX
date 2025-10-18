@@ -159,5 +159,12 @@
         "category": "Household",
         "amount": 2000000.0,
         "note": "Beli galon"
+    },
+    {
+        "date": "2025-10-18",
+        "type": "expense",
+        "category": "Dana Darurat",
+        "amount": 20000000.0,
+        "note": "nganu"
     }
 ]

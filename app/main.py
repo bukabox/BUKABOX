@@ -1041,6 +1041,9 @@ def add_business():
 @login_required
 def add_emergency():
     data = load_json("emergency.json")
+    if not isinstance(data, list):
+        data = []  # auto perbaiki kalau file salah format
+        
     entry = {
         "date": request.form["date"],
         "amount": float(request.form["amount"].replace(".", "")),
