@@ -376,7 +376,7 @@ tr:hover td { background: #fafafa; }
 
 /* â”€â”€â”€â”€â”€ Form Styling â”€â”€â”€â”€â”€ */
 form { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
-input, button {
+input, button, .category-group {
   padding: 8px 10px;
   border: 1px solid #90d6da40;
   background: var(--bg);
@@ -967,7 +967,7 @@ canvas {
   #income-overview {flex-direction:column}
   .block-chart {display:flex;width:100%}
   .block-chart .left, .block-chart .right {flex:1;min-width:50%}
-  .block-chart .grid2 {width:100%;display:flex;flex-direction:column;gap:20px}
+  .grid2 {width:100%;display:flex;flex-wrap:wrap;gap:8px}
 
   /* Mapping posisi */
   #income-overview { grid-area: income-overview; }

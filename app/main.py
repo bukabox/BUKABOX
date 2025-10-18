@@ -475,6 +475,25 @@ def index():
     total_expense = sum(c.get("amount", 0) for c in month_expense)
     total_invest_month = sum(month_invest)
 
+        # === Pengelompokan kategori (Cashflow Breakdown) ===
+    expense_operasional_categories = ["Konsumsi", "Household", "Tagihan", "Kesehatan", "Lain-lain"]
+    investment_saving_categories = ["Investment crypto", "Dana Darurat", "Loan", "Paylater"]
+
+    # Total expense operasional
+    total_expense_operasional = sum(
+        float(c.get("amount", 0))
+        for c in month_expense
+        if c.get("category") in expense_operasional_categories
+    )
+
+    # Total investment & savings (alokasi non-konsumtif)
+    total_investment_savings = sum(
+        float(c.get("amount", 0))
+        for c in month_expense
+        if c.get("category") in investment_saving_categories
+    )
+
+
 
     inv_crypto = sum(x.get("current_value", x.get("amount_idr", 0)) for x in investment if x.get("category") == "crypto")
     inv_gold = sum(x.get("current_value", x.get("amount_idr", 0)) for x in investment if x.get("category") == "gold")
@@ -578,7 +597,10 @@ def index():
         target1=target1, target2=target2, buffer_balance=buffer_balance, buffer_state=buffer_state,
         crypto_accumulation=crypto_accumulation,
         investment_reduce=investment_reduce,
-        monthly=monthly_data
+        monthly=monthly_data,
+        total_expense_operasional=total_expense_operasional,
+        total_investment_savings=total_investment_savings
+
     )
 @app.route("/investment")
 def investment_panel():
@@ -732,6 +754,8 @@ def add_expense():
     category = request.form.get("category", "")
     note = request.form.get("note", "")
     raw_amount = request.form.get("amount", "0")
+    category = request.form.get("category", "").strip().title()
+
 
     try:
         amount = float(raw_amount.replace(".", "").replace(",", ""))

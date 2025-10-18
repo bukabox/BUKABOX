@@ -62,21 +62,32 @@
   <!-- SECTION 2 – CASHFLOW -->
 <section id="cashflow" class="card">
   <div class="left">
-    <h2>Cashflow {{ today[:7] }}</h2>
-    <div class="cash-block"><h3>Income : {{ total_income|idr }}</h3></div>
-    <div class="cash-block">
-      <h3>Expenses : {{ total_expense|idr }}</h3>
-      <button onclick="toggleDetail('exp-table-box')">Detail</button>
-    </div>
-    <div class="summary-box buffer">
-      <p>Active Balance :
-        <span class="{{ buffer_state }}">
+  <h2>Cashflow {{ today[:7] }}</h2>
+
+  <div class="cash-block">
+    <h3>Income : {{ total_income|idr }}</h3>
+  </div>
+
+  <div class="cash-block">
+    <h3>Expenses : {{ total_expense|idr }}</h3>
+    <button onclick="toggleDetail('exp-table-box')">Detail</button>
+  </div>
+
+  <!-- 🟢 Tambahan non-destruktif: breakdown internal -->
+  <div class="cash-sub">
+    <p>─ Operasional : <strong>{{ total_expense_operasional|idr }}</strong></p>
+    <p>─ Investment & Savings : <strong>{{ total_investment_savings|idr }}</strong></p>
+  </div>
+
+  <div class="summary-box buffer">
+    <p>Active Balance :
+      <span class="{{ buffer_state }}">
         {{ buffer_balance | currency_format }}
       </span>
-        </span>
-      </p>
-    </div>
+    </p>
   </div>
+</div>
+
 
   <div class="right">
     <canvas id="cashflowChart"
@@ -95,7 +106,24 @@
   <form method="post" action="{{ url_for('add_expense') }}">
     <div class="grid2">
       <input type="date" name="date" value="{{ today }}">
-      <input type="text" name="category" placeholder="Kategori (misal: Makan, Transport, dll)" required>
+      <div class="category-group">
+  <select id="categorySelect" name="category" required>
+    <optgroup label="Operasional">
+      <option value="Konsumsi">Konsumsi</option>
+      <option value="Household">Household</option>
+      <option value="Tagihan">Tagihan</option>
+      <option value="Kesehatan">Kesehatan</option>
+      <option value="Lain-lain">Lain-lain</option>
+    </optgroup>
+    <optgroup label="Investment & Savings">
+      <option value="Investment crypto">Investment crypto</option>
+      <option value="Dana Darurat">Dana Darurat</option>
+      <option value="Loan">Loan</option>
+      <option value="Paylater">Paylater</option>
+    </optgroup>
+    <option value="_new">+ Tambah kategori baru...</option>
+  </select>
+</div>
       <input type="text" name="amount" class="money" autocomplete="off" placeholder="Jumlah (IDR)" required>
       <input type="text" name="note" placeholder="Catatan opsional">
       <button type="submit">Tambah</button>

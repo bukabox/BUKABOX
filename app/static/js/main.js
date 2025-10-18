@@ -383,5 +383,22 @@ if (lineCtx && window.MONTHLY_DATA) {
     }
   });
 }
-
+/* -------------------- Kategori Dinamis -------------------- */
+  const categorySelect = document.getElementById("categorySelect");
+  if (categorySelect) {
+    categorySelect.addEventListener("change", function () {
+      if (this.value === "_new") {
+        const newCat = prompt("Masukkan nama kategori baru:");
+        if (newCat && newCat.trim() !== "") {
+          const opt = document.createElement("option");
+          opt.value = newCat.trim();
+          opt.textContent = newCat.trim();
+          this.insertBefore(opt, this.querySelector('option[value="_new"]'));
+          this.value = newCat.trim();
+        } else {
+          this.value = "Konsumsi";
+        }
+      }
+    });
+  }
 }); // END DOMContentLoaded

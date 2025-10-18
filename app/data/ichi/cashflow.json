@@ -145,5 +145,19 @@
         "category": "Investment crypto",
         "amount": 24999520.0,
         "note": "Tes Beli"
+    },
+    {
+        "date": "2025-09-18",
+        "type": "expense",
+        "category": "Investment crypto",
+        "amount": 30000879.999999996,
+        "note": ""
+    },
+    {
+        "date": "2025-10-18",
+        "type": "expense",
+        "category": "Household",
+        "amount": 2000000.0,
+        "note": "Beli galon"
     }
 ]

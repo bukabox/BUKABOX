@@ -188,5 +188,15 @@
         "amount_idr": 24999520.0,
         "note": "Tes Beli",
         "timestamp": "2025-10-17T18:11:32.805192"
+    },
+    {
+        "category": "crypto",
+        "date": "2025-09-18",
+        "asset": "ADA",
+        "entry_price": 1820000000.0,
+        "entry_amount": 0.016484,
+        "amount_idr": 30000879.999999996,
+        "note": "",
+        "timestamp": "2025-10-18T14:16:17.432098"
     }
 ]

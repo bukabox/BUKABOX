@@ -1,11 +1,11 @@
 {
   "month": "2025-10",
-  "timestamp": "2025-10-17",
+  "timestamp": "2025-10-18",
   "summary": {
     "income": 68578123.0,
-    "expense": 38049393.0,
+    "expense": 40049393.0,
     "investment": 22316640.0,
-    "buffer": 8212090.0
+    "buffer": 6212090.0
   },
   "entries": {
     "income": [
@@ -65,6 +65,13 @@
         "category": "Investment crypto",
         "amount": 2000179.9999999998,
         "note": "Operasional"
+      },
+      {
+        "date": "2025-10-18",
+        "type": "expense",
+        "category": "Household",
+        "amount": 2000000.0,
+        "note": "Beli galon"
       }
     ],
     "investment": [

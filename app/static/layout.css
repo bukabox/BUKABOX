@@ -32,7 +32,12 @@
     box-sizing: border-box;
   }
 }
-
+.category-group select {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background-color: var(--bg-card);
+}
 /* ===== MOBILE STACK ===== */
 @media screen and (max-width: 1199px) {
   .container {
