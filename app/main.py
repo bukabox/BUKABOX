@@ -486,7 +486,7 @@ def index():
     invest_from_cashflow = sum(
         float(c.get("amount", 0))
         for c in cashflow
-        if c.get("type") == "investment"
+        if c.get("type") == "investment" and c.get("category") != "Dana Darurat"
     )
     total_invest_month += invest_from_cashflow
 
