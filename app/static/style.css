@@ -35,7 +35,9 @@
 .chart-legend li[data-label*="YouTube"] span { background-color: var(--color-youtube); }
 .chart-legend li[data-label*="Etsy"] span    { background-color: var(--color-etsy); }
 .chart-legend li[data-label*="Design"] span  { background-color: var(--color-freelance); }
-
+html {
+  -webkit-text-size-adjust: 100%; /* mencegah Safari auto-resize font */
+}
 * { box-sizing: border-box; }
 body {
   font-family: 'Poppins', sans-serif;
@@ -43,6 +45,11 @@ body {
   background: var(--bg);
   color: var(--text);
   font-weight:300 !important;
+}
+body {
+  min-width: 970px;     /* layout tidak mengecil di bawah 970px */
+  margin: 0;
+  padding: 0;
 }
 h1,h2,h3,h4 {font-weight:300}
 /* ===== HEADER STYLE ===== */
@@ -283,6 +290,7 @@ header h1 {
     padding:0 20px;
     align-items: center;
     background: #4b6cb7;
+    z-index:9999;
   }
   .sidebar-header {margin:0}
   .main-content {
@@ -298,6 +306,7 @@ header h1 {
     display: flex;
     align-items: center;
   }
+  .menu-item:hover, .menu-item.active {border-radius:0}
   .sidebar-footer, .menu-item span {display:none}
   footer {padding-bottom: 80px !important;}
 }
@@ -1485,7 +1494,7 @@ table tr {
   #income-overview {flex-direction:column}
   .block-chart {display:flex;width:100%;}
   .block-chart .left, .block-chart .right{flex: 0 50;min-width: 50%;}
-  #emergency-fund form {flex-wrap: nowrap}
+  #emergency-fund form {flex-wrap: wrap}
   .grid2 {display: flex;flex-direction: column;width: 100%;gap: 10px;}
 }
 .invest-page, .history-page {display:flex;margin-top:20px}
@@ -1549,4 +1558,25 @@ table tr {
   width: 100% !important;
   height: 100% !important;
   display: block;
+}
+@media (max-width: 500px) {
+  .summary-box {padding:0}
+  .block-chart {flex-direction:column}
+  .block-chart .left, .block-chart .right {
+        flex: 1;
+        min-width: 50%;
+        width: 100%;
+    }
+  #invest-overview {flex-direction:column}
+  #invest-overview .left, #invest-overview .right {width:100%}
+  table {
+  width: 100%;
+  max-width: 100%;
+  table-layout: auto;   /* biar kolom fleksibel */
+  word-wrap: break-word;
+}
+th, td {
+  white-space: normal;  /* izinkan teks turun baris kalau perlu */
+}
+.tab-content.full {padding:0}
 }
