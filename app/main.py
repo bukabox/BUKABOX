@@ -1042,8 +1042,8 @@ def add_business():
 def add_emergency():
     data = load_json("emergency.json")
     if not isinstance(data, list):
-        data = []  # auto perbaiki kalau file salah format
-        
+        data = []
+
     entry = {
         "date": request.form["date"],
         "amount": float(request.form["amount"].replace(".", "")),
@@ -1054,6 +1054,9 @@ def add_emergency():
 
     # catat ke cashflow juga
     cash = load_json("cashflow.json")
+    if not isinstance(cash, list):        # ⬅️ tambahkan ini
+        cash = []
+
     cash.append({
         "date": request.form["date"],
         "type": "expense",
@@ -1064,6 +1067,7 @@ def add_emergency():
     save_json("cashflow.json", cash)
 
     return redirect(url_for("index"))
+
 
 @app.route("/reduce_emergency", methods=["POST"])
 @login_required
