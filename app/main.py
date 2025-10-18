@@ -10,6 +10,7 @@ from functools import lru_cache
 from functools import wraps
 from flask import session
 from werkzeug.security import generate_password_hash, check_password_hash
+import calendar
 
 
 app = Flask(__name__)
@@ -88,6 +89,30 @@ for f in ["income.json", "cashflow.json", "investment.json", "emergency.json"]:
 print(f"[INFO] Using data directory: {DATA_DIR}")
 
 
+def get_all_investment_totals():
+    """Ambil total semua investasi dari folder user aktif."""
+    path = os.path.join(get_user_dir(), "investment.json")
+    if not os.path.exists(path):
+        print("DEBUG: investment.json tidak ditemukan di", path)
+        return {"crypto": 0, "gold": 0, "land": 0, "business": 0, "stock": 0}
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception as e:
+        print("Gagal baca investment.json:", e)
+        return {"crypto": 0, "gold": 0, "land": 0, "business": 0, "stock": 0}
+
+    totals = {"crypto": 0, "gold": 0, "land": 0, "business": 0, "stock": 0}
+    for inv in data:
+        cat = inv.get("category")
+        amount = float(inv.get("current_value", inv.get("amount_idr", 0)))
+        if cat in totals:
+            totals[cat] += amount
+    print("[DEBUG] Total investasi (history_detail):", totals)
+    return totals
+
+
 # ---------- UTIL ----------
 
 
@@ -103,6 +128,48 @@ def jfmt(v):
 
 def same_month(date_str, month):
     return date_str.startswith(month)
+
+import calendar  # tambahkan sekali di bagian import atas
+
+def get_monthly_summary():
+    """Hitung total income, expense, dan investment per bulan (1–12) untuk user aktif."""
+    user_dir = get_user_dir()
+    income = load_json("income.json")
+    cashflow = load_json("cashflow.json")
+    investment = load_json("investment.json")
+
+    monthly = {m: {"income": 0, "expense": 0, "investment": 0} for m in range(1, 13)}
+
+    for i in income:
+        try:
+            d = datetime.datetime.strptime(i.get("date", ""), "%Y-%m-%d")
+            monthly[d.month]["income"] += float(i.get("amount", 0))
+        except Exception:
+            continue
+
+    for e in cashflow:
+        if e.get("type") != "expense":
+            continue
+        try:
+            d = datetime.datetime.strptime(e.get("date", ""), "%Y-%m-%d")
+            monthly[d.month]["expense"] += float(e.get("amount", 0))
+        except Exception:
+            continue
+
+    for inv in investment:
+        try:
+            d = datetime.datetime.strptime(inv.get("date", ""), "%Y-%m-%d")
+            val = float(inv.get("amount_idr", inv.get("amount", 0)))
+            monthly[d.month]["investment"] += val
+        except Exception:
+            continue
+
+    labels = [calendar.month_abbr[m] for m in range(1, 13)]
+    income_data = [monthly[m]["income"] for m in range(1, 13)]
+    expense_data = [monthly[m]["expense"] for m in range(1, 13)]
+    invest_data = [monthly[m]["investment"] for m in range(1, 13)]
+
+    return {"labels": labels, "income": income_data, "expense": expense_data, "investment": invest_data}
 
 
 
@@ -438,7 +505,8 @@ def index():
     # Hitung total bulan berjalan
     total_income = sum(float(i.get("amount", 0)) for i in income_month)
     total_expense = sum(float(c.get("amount", 0)) for c in expense_month)
-    total_invest_month = sum(float(i.get("amount", 0)) for i in invest_month)
+    total_invest_month = sum(float(i.get("amount_idr", i.get("amount", 0))) for i in invest_month)
+
 
     # === Buffer baru (bulan berjalan) ===
     buffer_balance = total_income - (total_expense + total_invest_month)
@@ -495,6 +563,7 @@ def index():
             "current_value": t["current_value"],
             "pnl": pnl
         })
+    monthly_data = get_monthly_summary()
 
 
     return render_template(
@@ -509,6 +578,7 @@ def index():
         target1=target1, target2=target2, buffer_balance=buffer_balance, buffer_state=buffer_state,
         crypto_accumulation=crypto_accumulation,
         investment_reduce=investment_reduce,
+        monthly=monthly_data
     )
 @app.route("/investment")
 def investment_panel():
@@ -1039,7 +1109,8 @@ def history_panel():
         })
 
     # kirim ke template
-    return render_template("history.html", histories=histories)
+    monthly_data = get_monthly_summary()
+    return render_template("history.html", histories=histories, monthly=monthly_data)
 
 
 @app.route("/history/snapshot")
@@ -1120,12 +1191,34 @@ def history_detail(month):
         data = json.load(f)
 
     summary = data.get("summary", {})
-    entries = data.get("entries", {})  # âœ… ambil dari 'entries'
+    entries = data.get("entries", {})
 
-    return render_template("history_detail.html",
-                           month=month,
-                           summary=summary,
-                           entries=entries)
+    # cashflow tetap pakai summary
+    total_income = float(summary.get("income", 0))
+    total_expense = float(summary.get("expense", 0))
+    total_invest_month = float(summary.get("investment", 0))
+    buffer_balance = total_income - (total_expense + total_invest_month)
+
+    # 🟢 ambil semua data investasi dari investment.json
+    inv_data = get_all_investment_totals()
+
+    return render_template(
+        "history_detail.html",
+        month=month,
+        summary=summary,
+        entries=entries,
+        total_income=total_income,
+        total_expense=total_expense,
+        total_invest_month=total_invest_month,
+        buffer_balance=buffer_balance,
+        inv_crypto=inv_data["crypto"],
+        inv_gold=inv_data["gold"],
+        inv_land=inv_data["land"],
+        inv_business=inv_data["business"],
+        inv_stock=inv_data["stock"]
+    )
+
+
 
 
 @app.route("/history/<month>/pdf")

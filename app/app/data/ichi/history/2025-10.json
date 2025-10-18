@@ -1,0 +1,15 @@
+{
+  "month": "2025-10",
+  "timestamp": "2025-10-17",
+  "summary": {
+    "income": 0,
+    "expense": 0,
+    "investment": 0,
+    "buffer": 0
+  },
+  "entries": {
+    "income": [],
+    "expense": [],
+    "investment": []
+  }
+}

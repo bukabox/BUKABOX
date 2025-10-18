@@ -11,7 +11,7 @@
       <div class="summary-card"><h3>Expense</h3><p>{{ total_expense | idr }}</p></div>
       <div class="summary-card"><h3>Investment</h3><p>{{ total_invest_month | idr }}</p></div>
       <div class="summary-card">
-        <h3>Balance</h3>
+        <h3>Buffer</h3>
         <p>{{ buffer | idr }}</p>
       </div>
     </div>
@@ -69,7 +69,7 @@
       <button onclick="toggleDetail('exp-table-box')">Detail</button>
     </div>
     <div class="summary-box buffer">
-      <p>Active Balance :
+      <p><strong>Buffer (Sisa Bulan Ini):</strong>
         <span class="{{ buffer_state }}">
         {{ buffer_balance | currency_format }}
       </span>
@@ -134,20 +134,6 @@
     </table>
   </div>
 </section>
-
-<section class="card chart-card">
-  <div class="chart-header">
-    <h3>Cashflow Trend</h3>
-  </div>
-  <div class="chart-body">
-    <canvas id="lineMonthlyChart"></canvas>
-  </div>
-</section>
-
-<script>
-  window.MONTHLY_DATA = {{ monthly|tojson }};
-</script>
-
 
 <!-- 💰 Dana Darurat -->
 <section id="emergency-fund" class="card full-width">

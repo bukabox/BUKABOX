@@ -25,8 +25,6 @@
       <a class="btn-nav" href="{{ url_for('investment_panel') }}">Investment</a>
       {% if not session.get('logged_in') %}
         <a href="#" id="loginBtn" class="btn-nav">Login</a>
-      {% else %}
-        <a href="{{ url_for('logout') }}" class="btn-nav highlight">Logout</a>
       {% endif %}
       <a class="btn-nav" href="{{ url_for('save_month_snapshot') }}">Rekap Bulanan</a>
       <div class="user-banner">
@@ -44,6 +42,20 @@
 </header>
 
 
+{% block content %}
+  <div class="top-container">
+    <!-- ====== Summary Cards ====== -->
+    {% set buffer = total_income - (total_expense + total_invest_month) %}
+    <div class="summary-box">
+      <div class="summary-card"><h3>Income</h3><p>{{ total_income | idr }}</p></div>
+      <div class="summary-card"><h3>Expense</h3><p>{{ total_expense | idr }}</p></div>
+      <div class="summary-card"><h3>Investment</h3><p>{{ total_invest_month | idr }}</p></div>
+      <div class="summary-card">
+        <h3>Buffer</h3>
+        <p>{{ buffer | idr }}</p>
+      </div>
+    </div>
+  </div>
 
 
 <div id="cardContainer" class="container masonry">
@@ -98,8 +110,9 @@
     </div>
     <div class="summary-box buffer">
       <p><strong>Buffer (Sisa Bulan Ini):</strong>
-        <span class="{% if buffer_balance < 0 %}negative{% else %}positive{% endif %}">
-          {{ buffer_balance | currency_format }}
+        <span class="{{ buffer_state }}">
+        {{ buffer_balance | currency_format }}
+      </span>
         </span>
       </p>
     </div>
@@ -164,26 +177,7 @@
 
 <!-- 💰 Dana Darurat -->
 <section id="emergency-fund" class="card full-width">
-  <h2>💰 Dana Darurat</h2>
-  {% if session.get('logged_in') %}
-  <form method="post" action="{{ url_for('add_emergency') }}">
-    <input type="date" name="date" value="{{ today }}">
-    <input type="text" name="amount" class="money" placeholder="Jumlah (IDR)">
-    <input type="text" name="note" placeholder="Catatan">
-    <button type="submit" class="btn-green">Tambah</button>
-  </form>
-
-  <form method="post" action="{{ url_for('reduce_emergency') }}" style="margin-top:10px;">
-    <input type="date" name="date" value="{{ today }}">
-    <input type="text" name="amount" class="money" placeholder="Kurangi (IDR)">
-    <input type="text" name="note" placeholder="Catatan pengeluaran">
-    <button type="submit" class="btn-red">Kurangi</button>
-  </form>
-
-  {% endif %}
-  <hr>
-
-  <div class="emergency-summary">
+   <div class="emergency-summary">
     <p><strong>Total terkumpul:</strong> {{ total_emergency | currency_format }}</p>
     <p>Target 1: Rp {{ target1 | currency_format }}</p>
     
@@ -212,6 +206,26 @@
 </div>
 
   </div>
+  <h2>💰 Dana Darurat</h2>
+  {% if session.get('logged_in') %}
+  <form method="post" action="{{ url_for('add_emergency') }}">
+    <input type="date" name="date" value="{{ today }}">
+    <input type="text" name="amount" class="money" placeholder="Jumlah (IDR)">
+    <input type="text" name="note" placeholder="Catatan">
+    <button type="submit" class="btn-green">Tambah</button>
+  </form>
+
+  <form method="post" action="{{ url_for('reduce_emergency') }}" style="margin-top:10px;">
+    <input type="date" name="date" value="{{ today }}">
+    <input type="text" name="amount" class="money" placeholder="Kurangi (IDR)">
+    <input type="text" name="note" placeholder="Catatan pengeluaran">
+    <button type="submit" class="btn-red">Kurangi</button>
+  </form>
+
+  {% endif %}
+  <hr>
+
+ 
 
   <table class="emergency-table">
     <thead>
@@ -258,7 +272,7 @@
     </div>
   </section>
 
-
+{% endblock %}
 
 <footer><p>© 2025 PT BUKABOX CREATIVE STUDIO</p>
 <form action="{{ url_for('save_history') }}" method="get" style="margin-top:20px;">

@@ -1,6 +1,22 @@
 /* ==========================================================
    BUKABOX DASHBOARD SCRIPT v4.6 (Cleaned & Stable)
    ========================================================== */
+/* ==========================================================
+   GLOBAL CHART CONFIG (berlaku untuk semua doughnut)
+   ========================================================== */
+Chart.defaults.datasets.doughnut.cutout = '90%';
+Chart.defaults.datasets.doughnut.borderWidth = 2;
+Chart.defaults.datasets.doughnut.borderColor = '#f6f9ff';
+Chart.defaults.plugins.legend.position = 'bottom';
+Chart.defaults.plugins.legend.labels.boxWidth = 14;
+Chart.defaults.plugins.legend.labels.color = '#333';
+Chart.defaults.plugins.legend.labels.font = { family: 'Poppins', size: 13 };
+Chart.defaults.plugins.tooltip.backgroundColor = '#fff';
+Chart.defaults.plugins.tooltip.titleColor = '#333';
+Chart.defaults.plugins.tooltip.bodyColor = '#555';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.borderColor = '#eee';
+Chart.defaults.plugins.tooltip.padding = 8;
 
 /* ----------------------- Format Uang ----------------------- */
 document.addEventListener("DOMContentLoaded", () => {
@@ -107,26 +123,59 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* -------------------- Chart.js Options -------------------- */
+  
   const commonOpt = {
-    responsive: true,
-    maintainAspectRatio: true,
-    aspectRatio: 1,
-    plugins: {
-      legend: { position: 'bottom', labels: { font: { size: 13 }, color: '#333' } },
-      tooltip: {
-        callbacks: {
-          label: function (context) {
-            const dataset = context.dataset;
-            const total = dataset.data.reduce((a, b) => a + b, 0);
-            const val = dataset.data[context.dataIndex];
-            const percent = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
-            const formatted = val.toLocaleString('id-ID');
-            return `${context.label}: Rp ${formatted} (${percent}%)`;
-          }
+  responsive: true,
+  maintainAspectRatio: true,
+  aspectRatio: 1,
+
+  // 💡 di Chart.js v4, letakkan di level teratas (bukan di dataset)
+  cutout: '70%',   // semakin besar = ring makin tipis
+  radius: '98%',   // ukuran luar chart
+  layout: { padding: 5 },
+
+  plugins: {
+    legend: {
+      position: 'bottom',
+      labels: {
+        font: { size: 13, family: 'Poppins' },
+        color: '#333',
+        boxWidth: 14
+      }
+    },
+    tooltip: {
+      backgroundColor: '#fff',
+      titleColor: '#333',
+      bodyColor: '#555',
+      borderWidth: 1,
+      borderColor: '#eee',
+      padding: 8,
+      callbacks: {
+        label: function (context) {
+          const dataset = context.dataset;
+          const total = dataset.data.reduce((a, b) => a + b, 0);
+          const val = dataset.data[context.dataIndex];
+          const percent = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+          const formatted = val.toLocaleString('id-ID');
+          return `${context.label}: Rp ${formatted} (${percent}%)`;
         }
       }
     }
-  };
+  },
+
+  elements: {
+    arc: {
+      borderWidth: 2,
+      borderColor: '#f6f9ff' // efek outline lembut
+    }
+  },
+
+  animation: {
+    duration: 600,
+    easing: 'easeOutQuart'
+  }
+};
+
   /* -------------------- Plugin: No Data Text -------------------- */
 Chart.register({
   id: 'noDataText',
@@ -156,16 +205,16 @@ Chart.register({
     const total = data.reduce((a, b) => a + b, 0);
     if (total === 0) {
       new Chart(cashCtx, {
-        type: "pie",
-        data: { labels: ["Belum ada data"], datasets: [{ data: [1], backgroundColor: ["#e0e0e0"] }] },
+        type: "doughnut",
+        data: { labels: ["Belum ada data"], datasets: [{ data: [1], backgroundColor: ["#7e7e7eff"] }] },
         options: { plugins: { legend: { display: false }, tooltip: { enabled: false } } }
       });
     } else {
       new Chart(cashCtx, {
-        type: "pie",
+        type: "doughnut",
         data: {
           labels: ["Income", "Expense", "Investment", "Buffer"],
-          datasets: [{ data, backgroundColor: ["#A5C8E4","#F4C7B8","#B8E4C9","#C6E2B3"] }]
+          datasets: [{ data, backgroundColor: ["#44acf2","#f1905e","#a5e260","#a9e157"] }]
         },
         options: commonOpt
       });
@@ -181,19 +230,18 @@ Chart.register({
     if (labels.length === 0 || total === 0) {
       new Chart(incomeCtx, {
         type: 'doughnut',
-        data: { labels: ['Belum ada data'], datasets: [{ data: [1], backgroundColor: ['#d9d9d9'], cutout: '60%' }] },
-        options: { cutout: '60%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+        data: { labels: ['Belum ada data'], datasets: [{ data: [1], backgroundColor: ['#949393ff'], cutout: '70%' }] },
+        options: { cutout: '70%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
       });
     } else {
       new Chart(incomeCtx, {
         type: 'doughnut',
-        data: { labels, datasets: [{ data: values, backgroundColor: ['#B8E4C9','#A5C8E4','#F4C7B8','#EAD1DC'], cutout: '60%' }] },
+        data: { labels, datasets: [{ data: values, backgroundColor: ['#57d989','#44acf2','#f1905e','#e869a0ff'], cutout: '70%' }] },
         options: commonOpt
       });
     }
   }
 
-  /* -------------------- INVESTMENT CHART -------------------- */
   /* -------------------- INVESTMENT CHART -------------------- */
 const investCtx = document.getElementById("investChart");
 if (investCtx) {
@@ -211,7 +259,7 @@ if (investCtx) {
     new Chart(investCtx, {
       type: "doughnut",
       data: { labels: ["Belum ada data"], datasets: [{ data: [1], backgroundColor: ["#d9d9d9"] }] },
-      options: { cutout: "60%", plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+      options: { cutout: "70%", plugins: { legend: { display: false }, tooltip: { enabled: false } } }
     });
   } else {
     new Chart(investCtx, {
@@ -221,14 +269,14 @@ if (investCtx) {
         datasets: [{
           data,
           backgroundColor: [
-            "#B8E4C9", // Crypto
-            "#FCE0A2", // Gold
-            "#D7BCE8", // Land
-            "#F4C7B8", // Business
-            "#A5C8E4", // Stock
-            "#AED6F1"  // 🟩 Emergency Fund
+            "#a5e262", // Crypto
+            "#f1ca75ff", // Gold
+            "#9e73f4", // Land
+            "#f1905e", // Business
+            "#44adf2", // Stock
+            "#49a6e4ff"  // 🟩 Emergency Fund
           ],
-          cutout: "60%"
+          cutout: "70%"
         }]
       },
       options: commonOpt
@@ -256,5 +304,84 @@ if (investCtx) {
     if (el) el.classList.add('active');
     document.getElementById('asset-detail').scrollIntoView({ behavior: 'smooth' });
   }
+// ================= LINE MONTHLY CHART =================
+const lineCtx = document.getElementById("lineMonthlyChart");
+if (lineCtx && window.MONTHLY_DATA) {
+  const { labels, income, expense, investment } = window.MONTHLY_DATA;
+  const ctx = lineCtx.getContext("2d");
+
+  const makeGrad = (ctx, color) => {
+    const g = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+    g.addColorStop(0, color.replace("1)", "0.2)"));
+    g.addColorStop(1, color.replace("1)", "0)"));
+    return g;
+  };
+
+  const colors = {
+    income: "rgba(68,172,242,1)",    // biru pastel (Income)
+    expense: "rgba(241,144,94,1)",   // oranye (Expense)
+    invest: "rgba(165,226,96,1)"     // hijau muda (Investment)
+  };
+
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Income",
+          data: income,
+          borderColor: colors.income,
+          backgroundColor: makeGrad(ctx, colors.income),
+          fill: true,
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 2,
+        },
+        {
+          label: "Expense",
+          data: expense,
+          borderColor: colors.expense,
+          backgroundColor: makeGrad(ctx, colors.expense),
+          fill: true,
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 2,
+        },
+        {
+          label: "Investment",
+          data: investment,
+          borderColor: colors.invest,
+          backgroundColor: makeGrad(ctx, colors.invest),
+          fill: true,
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 2,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `${ctx.dataset.label}: Rp ${ctx.parsed.y.toLocaleString("id-ID")}`
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: (v) => v.toLocaleString("id-ID") },
+          grid: { color: "rgba(0,0,0,0.06)" }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
 
 }); // END DOMContentLoaded

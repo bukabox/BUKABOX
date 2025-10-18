@@ -1,12 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 :root {
   --blue: #A5C8E4;
   --mint: #B8E4C9;
   --peach: #F4C7B8;
   --lavender: #D7BCE8;
   --gold: #FCE0A2;
-  --bg: #F9F9F9;
+  --bg: #f2f8f9;
   --text: #333;
   --shadow: 0 2px 8px rgba(0,0,0,0.06);
   --color-line:     #9be2a8; /* LINE pastel green */
@@ -38,17 +38,17 @@
 
 * { box-sizing: border-box; }
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Poppins', sans-serif;
   margin: 0;
   background: var(--bg);
   color: var(--text);
+  font-weight:300 !important;
 }
-
+h1,h2,h3,h4 {font-weight:300}
 /* ===== HEADER STYLE ===== */
 header {
   text-align: center;
   padding: 20px 0 10px;
-  border-bottom: 2px solid #eee;
 }
 
 header h1 {
@@ -67,7 +67,7 @@ header h1 {
     padding: 0 16px;
     width: 100%;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     flex-wrap: nowrap;  
     height: 60px;
     align-items: center;     
@@ -79,7 +79,7 @@ header h1 {
   background: #fff;
   border-radius: 12px;
   padding: 12px 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow:0px 6px 19px rgba(225, 243, 255, 0.02);
   position: sticky;
   top: 0;
   z-index: 999;
@@ -170,6 +170,138 @@ header h1 {
   }
 }
 
+/* ======= Layout utama ======= */
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f6f9ff;
+}
+
+/* ======= Sidebar ======= */
+.sidebar {
+  width: 240px;
+  background: linear-gradient(180deg, #4b6cb7, #182848);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 20px 0 20px 20px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index:999;
+}
+
+.sidebar-header {
+  text-align: center;
+  margin: 0 20px 20px -20px;
+}
+
+.sidebar-header h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin:0 0 10px 0;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-item {
+  padding: 12px 24px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.95rem;
+  opacity: 0.9;
+  transition: all 0.2s ease;
+  position:relative;
+}
+
+.menu-item:hover,
+.menu-item.active {
+  background:var(--bg);
+  opacity: 1;
+  border-top-left-radius: 25px; 
+  border-bottom-left-radius: 25px; 
+}
+
+.menu-item i {
+  font-size: 1.1rem;
+  width: 22px;
+  text-align: center;
+  color: #fff; /* ikon tetap putih */
+}
+
+.menu-item:hover,
+.menu-item.active,
+.menu-item:hover i,
+.menu-item.active i {color:var(--text)}
+
+/* Atas: bikin lengkung putih dgn box-shadow offset ke kanan-bawah */
+.menu-item.active::before{
+  top: -18px;
+  box-shadow: 18px 18px 0 0 var(--active-bg);
+  /* hasilnya: sisi atas terlihat melengkung masuk */
+}
+
+/* Bawah: bikin lengkung putih dgn box-shadow offset ke kanan-atas */
+.menu-item.active::after{
+  bottom: -18px;
+}
+
+.sidebar-footer {
+  text-align: center;
+  font-size: 0.8rem;
+  opacity: 0.6;
+  position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+/* ======= Konten utama ======= */
+.main-content {
+  margin-left: 240px; /* geser kanan sebesar sidebar */
+  padding: 30px;
+  flex: 1;
+  background: #f6f9ff;
+  overflow-x: hidden;
+}
+
+/* ======= Responsif ======= */
+@media (max-width: 1100px) {
+  .sidebar {
+    width: 100%;
+    height: 80px;
+    flex-direction: row;
+    justify-content: space-between;
+    box-shadow: none;
+    bottom:0;
+    top:auto;
+    padding:0 20px;
+    align-items: center;
+    background: #4b6cb7;
+  }
+  .sidebar-header {margin:0}
+  .main-content {
+    margin-left: 0;
+    padding: 20px;
+  }
+  .menu {
+    height:100%;
+    flex-direction: row;
+    justify-content: space-around;
+  }
+  .menu-item {
+    display: flex;
+    align-items: center;
+  }
+  .sidebar-footer, .menu-item span {display:none}
+  footer {padding-bottom: 80px !important;}
+}
+
 .user-banner {display:flex}
 .user-banner a {line-height:10px;vertical-align: middle;
     display: flex;
@@ -201,6 +333,7 @@ canvas {
   margin: auto;
   transition: transform 0.3s ease;
 }
+#invest-overview {width:100%;max-width:1600px;margin:0 auto}
 #investChart:hover { transform: scale(1.06); }
 #invest-overview { align-items: center; }
 
@@ -243,7 +376,8 @@ tr:hover td { background: #fafafa; }
 form { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
 input, button {
   padding: 8px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #90d6da40;
+  background: var(--bg);
   border-radius: 6px;
   font-family: inherit;
   font-size: 0.9rem;
@@ -376,7 +510,7 @@ html { scroll-behavior: smooth; }
 /* memastikan chart 1 dan 2 bulat sempurna */
 #incomeChart, #cashflowChart {
   width: 100% !important;
-  max-width: 320px;
+  max-width: 250px;
   height: auto !important;
   margin: auto;
   display: block;
@@ -413,8 +547,9 @@ footer {
   gap: 30px;
   max-width: 1600px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 0;
 }
+.top-container {width:100%;max-width:1600px;margin:0 auto}
 
 /* Mode desktop besar: dua kolom kiri-kanan */
 @media screen and (min-width: 1200px) {
@@ -469,14 +604,6 @@ canvas {
   box-sizing: border-box;
 }
 /* ====== LAYOUT GRID RESPONSIVE (versi sejajar) ====== */
-.container {
-  display: grid;
-  grid-template-columns: 1fr; /* default mobile */
-  gap: 24px;
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 20px;
-}
 
 /* Desktop 2 kolom */
 @media screen and (min-width: 1200px) {
@@ -508,7 +635,7 @@ canvas {
     min-height: 420px; /* biar stabil */
   }
 }
-
+#cashflow, .block-chart {align-items: center;}
 /* ====== SETIAP BLOK ====== */
 section {
   background: #fff;
@@ -532,7 +659,6 @@ canvas {
 
 /* ====== BUFFER / DANA DARURAT ====== */
 #emergency-fund {
-  background: #f9fafc;
   border-radius: 12px;
   padding: 20px;
 }
@@ -555,16 +681,18 @@ canvas {
 
 #emergency-fund form {
   display: flex;
+  width:100%;
   flex-wrap: wrap;
   gap: 10px;
   align-items: flex-start;
+  justify-content: space-between;
 }
 
 #emergency-fund form input,
 #emergency-fund form textarea,
 #emergency-fund form button {
   flex: 1 1 100%;
-  max-width: 260px;
+  max-width: 48%;
 }
 
 /* Progress bar container â€” vertikal urut bawah form */
@@ -597,15 +725,7 @@ canvas {
 }
 #emergency-fund .bar-block {flex:100%;width:100%}
 .emergency-summary {width:100%}
-/* ====== GRID LAYOUT FINAL v4.4 ====== */
-.container {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 28px;
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 20px;
-}
+
 /* === Progress Bar Dana Darurat === */
 .progress-container {
   width: 100%;
@@ -620,7 +740,7 @@ canvas {
 .progress-bar {
   width: 100%;
   height: 100%;
-  background: #ddd;
+  background: var(--bg);
   position: relative;
 }
 
@@ -642,7 +762,6 @@ canvas {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 30px;
-  align-items: start;
   margin-top: 20px;
 }
 
@@ -690,15 +809,15 @@ canvas {
 .summary-box.buffer {
   margin-top: 20px;
   padding: 12px 16px;
-  background: #E3F2E1;
-  border: 2px solid #B8E4C9;
   border-radius: 10px;
   font-weight: 600;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  background: linear-gradient(to bottom left, #abe155, #42d99a);
+  box-shadow: 0 8px 20px rgba(86, 171, 47, 0.3), 0 3px 6px rgba(0, 0, 0, 0.05);
+  color:#fff;
 }
 
 .summary-box.buffer .positive {
-  color: #2E7D32;
+  color: #fff;
 }
 .summary-box.buffer .negative {
   color: #C62828;
@@ -716,6 +835,112 @@ canvas {
   height: 100%;
   background: linear-gradient(90deg, #B8E4C9, #A5C8E4);
   transition: width 0.5s ease;
+}
+.top-container {width:100%;font-family:'Poppins', sans-serif;}
+.chart-wrap {
+      display:flex; justify-content:center; gap:40px; flex-wrap:wrap; margin:40px 0;justify-content: space-around;
+    }
+    .chart-wrap canvas { min-width:300px !important; min-height:300px !important; }
+.summary-box {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 30px 0;
+}
+
+.summary-card {
+  flex: 1;
+  min-width: 220px;
+  border-radius: 4px;
+  padding: 20px 25px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.summary-card::after {
+  content: "";
+  position: absolute;
+  right: -15px;
+  bottom: -15px;
+  width: 100px;
+  height: 100px;
+  opacity: 0.15;
+  background-size: contain;
+  background-repeat: no-repeat;
+  filter: brightness(0) invert(1); /* ubah ikon jadi putih */
+}
+
+/* INCOME */
+.summary-card:nth-child(1) {
+    background: linear-gradient(to bottom left, #c677fe, #5a6ee5);
+    box-shadow:
+    0 8px 20px rgba(161, 138, 255, 0.25),
+    0 3px 6px rgba(0, 0, 0, 0.05);
+}
+.summary-card:nth-child(1)::after {
+  background-image: url('https://cdn-icons-png.flaticon.com/512/2331/2331943.png');
+}
+
+/* EXPENSE */
+.summary-card:nth-child(2) {
+  background: linear-gradient(to bottom left, #f5a258, #e14d70);
+  box-shadow:
+    0 8px 20px rgba(255, 132, 100, 0.3),
+    0 3px 6px rgba(0, 0, 0, 0.05);
+}
+.summary-card:nth-child(2)::after {
+  background-image: url('https://cdn-icons-png.flaticon.com/512/2920/2920677.png');
+}
+
+/* INVESTMENT */
+.summary-card:nth-child(3) {
+  background: linear-gradient(to bottom left, #42aef2, #747bfb);
+  box-shadow:
+    0 8px 20px rgba(41, 128, 185, 0.3),
+    0 3px 6px rgba(0, 0, 0, 0.05);
+}
+.summary-card:nth-child(3)::after {
+  background-image: url('https://cdn-icons-png.flaticon.com/512/1828/1828911.png');
+}
+
+/* BUFFER */
+.summary-card:nth-child(4) {
+  background: linear-gradient(to bottom left, #abe155, #42d99a);
+  box-shadow:
+    0 8px 20px rgba(86, 171, 47, 0.3),
+    0 3px 6px rgba(0, 0, 0, 0.05);
+}
+.summary-card:nth-child(4)::after {
+  background-image: url('https://cdn-icons-png.flaticon.com/512/992/992651.png');
+}
+
+/* Typography */
+.summary-card h3 {
+  font-size: 1.5rem;
+  font-weight: 200;
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+
+.summary-card p {
+  font-size: 2.5rem;
+  font-weight: 100;
+  margin: 0;
+}
+
+.summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 1100px) {
+  .summary-box {
+    padding:20px;
+  }
 }
 
 @media(max-width: 900px) {
@@ -738,8 +963,10 @@ canvas {
     align-items: start;
   }
   #income-overview {flex-direction:column}
-  #incomeChart {min-width:350px}
-  .block-chart {display:flex}
+  .block-chart {display:flex;width:100%}
+  .block-chart .left, .block-chart .right {flex:1;min-width:50%}
+  .block-chart .grid2 {width:100%;display:flex;flex-direction:column;gap:20px}
+
   /* Mapping posisi */
   #income-overview { grid-area: income-overview; }
   #cashflow        { grid-area: cashflow; }
@@ -756,7 +983,6 @@ canvas {
   /* Dana darurat tampil lebih gepeng */
   #emergency-fund {
     min-height: 180px;
-    background: #f9fafc;
     border-radius: 12px;
     padding: 20px;
   }
@@ -891,7 +1117,7 @@ canvas {
   font-size: 14px;
 }
 .expense-table th, .expense-table td {
-  border: 1px solid #ddd;
+  border: 1px solid var(--bg);
   padding: 6px 10px;
   text-align: left;
 }
@@ -933,7 +1159,6 @@ table.full-width {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
-  border-radius: 10px;
   overflow: hidden;
 }
 table.full-width th {
@@ -949,6 +1174,9 @@ table.full-width .empty {
   text-align: center;
   color: #999;
   font-style: italic;
+}
+table tr {
+  border-color:var(--bg)
 }
 /* Khusus halaman Investment */
 .page-investment .container {
@@ -1039,7 +1267,7 @@ table.full-width .empty {
   background: #fff;
   border-radius: 12px;
   padding: 16px 18px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0px 0px 19px 0px rgb(112 204 232 / 8%);
 }
 
 /* === Reduce Invest Section === */
@@ -1259,4 +1487,66 @@ table.full-width .empty {
   .block-chart .left, .block-chart .right{flex: 0 50;min-width: 50%;}
   #emergency-fund form {flex-wrap: nowrap}
   .grid2 {display: flex;flex-direction: column;width: 100%;gap: 10px;}
+}
+.invest-page, .history-page {display:flex;margin-top:20px}
+.history-page {flex-direction:column}
+.btn-snapshot {
+  font-size: 1rem;
+  background: linear-gradient(to bottom left, #f5a258, #e14d70);
+  box-shadow: 0 8px 20px rgba(255, 132, 100, 0.3), 0 3px 6px rgba(0, 0, 0, 0.05);
+  text-decoration: none;
+    color: #fff;
+    border-radius: 20px;
+    padding: 20px;
+}
+.history-page .chart-wrap canvas {
+    min-width: 280px !important;
+    min-height: 300px !important;
+}
+.btn-snapshot:hover, btn btn-pdf:hover, .btn btn-detail:hover {
+  opacity:.9;
+}
+.btn-detail, .btn-pdf {
+  padding:5px 10px;
+  color:#fff;
+  text-decoration:none;
+  border-radius:20px;
+  margin:0 0 0 5px;
+}
+.btn-detail {
+  background: linear-gradient(to bottom left, #42aef2, #747bfb);
+  box-shadow: 0 8px 20px rgba(41, 128, 185, 0.3), 0 3px 6px rgba(0, 0, 0, 0.05);
+}
+.btn-pdf {
+  background: linear-gradient(to bottom left, #abe155, #42d99a);
+  box-shadow: 0 8px 20px rgba(86, 171, 47, 0.3), 0 3px 6px rgba(0, 0, 0, 0.05);
+}
+.chart-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  margin: 12px 0;
+  overflow: hidden;
+  flex-direction: column;
+}
+
+.chart-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #333;
+}
+
+.chart-body {
+  width:100%;
+  padding: 12px 18px;
+  height: 320px;        /* tinggi tetap agar chart tidak collapse */
+  position: relative;
+}
+
+.chart-body canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
 }

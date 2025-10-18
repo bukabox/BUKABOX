@@ -1,6 +1,123 @@
 {
-  "summary": [],
-  "entries": [],
-  "crypto_accumulation": [],
-  "saved_at": "2025-10-17"
+  "month": "2025-10",
+  "timestamp": "2025-10-17",
+  "summary": {
+    "income": 68578123.0,
+    "expense": 38049393.0,
+    "investment": 22316640.0,
+    "buffer": 8212090.0
+  },
+  "entries": {
+    "income": [
+      {
+        "date": "2025-10-15",
+        "stream": "LINE",
+        "amount": 68578123.0,
+        "note": "LINE Oct"
+      }
+    ],
+    "expense": [
+      {
+        "date": "2025-10-16",
+        "type": "expense",
+        "category": "Dana Darurat",
+        "amount": 20000000.0,
+        "note": "Setoran 1"
+      },
+      {
+        "date": "2025-10-16",
+        "type": "expense",
+        "category": "Houshold",
+        "amount": 1000000.0,
+        "note": "Listrik"
+      },
+      {
+        "date": "2025-10-16",
+        "type": "expense",
+        "category": "Lain",
+        "amount": 50243.0,
+        "note": "Web Deployer"
+      },
+      {
+        "date": "2025-10-16",
+        "type": "expense",
+        "category": "Investment crypto",
+        "amount": 11999610.0,
+        "note": "DCA"
+      },
+      {
+        "date": "2025-10-16",
+        "type": "expense",
+        "category": "Investment crypto",
+        "amount": 2000179.9999999998,
+        "note": "Operational"
+      },
+      {
+        "date": "2025-10-16",
+        "type": "expense",
+        "category": "Investment crypto",
+        "amount": 999180.0,
+        "note": "Anak"
+      },
+      {
+        "date": "2025-10-16",
+        "type": "expense",
+        "category": "Investment crypto",
+        "amount": 2000179.9999999998,
+        "note": "Operasional"
+      }
+    ],
+    "investment": [
+      {
+        "category": "business",
+        "asset": "BUKABOX YT",
+        "sector": "",
+        "date": "2025-10-16",
+        "unit_value": 5317490.0,
+        "entry_amount": 5317490.0,
+        "amount_idr": 5317490.0,
+        "note": "Cicilan Kamera"
+      },
+      {
+        "category": "crypto",
+        "date": "2025-10-16",
+        "asset": "BTC",
+        "entry_price": 1890000000.0,
+        "entry_amount": 0.006349,
+        "amount_idr": 11999610.0,
+        "note": "DCA",
+        "timestamp": "2025-10-17T14:07:56.922696"
+      },
+      {
+        "category": "crypto",
+        "date": "2025-10-16",
+        "asset": "BTC",
+        "entry_price": 1820000000.0,
+        "entry_amount": 0.001099,
+        "amount_idr": 2000179.9999999998,
+        "note": "Operational",
+        "timestamp": "2025-10-17T14:08:27.570500"
+      },
+      {
+        "category": "crypto",
+        "date": "2025-10-16",
+        "asset": "BTC",
+        "entry_price": 1820000000.0,
+        "entry_amount": 0.000549,
+        "amount_idr": 999180.0,
+        "note": "Anak",
+        "timestamp": "2025-10-17T14:08:55.314229"
+      },
+      {
+        "category": "crypto",
+        "date": "2025-10-16",
+        "asset": "BTC",
+        "entry_price": 1820000000.0,
+        "entry_amount": 0.001099,
+        "amount_idr": 2000179.9999999998,
+        "note": "Operasional",
+        "timestamp": "2025-10-17T14:09:14.922547"
+      }
+    ]
+  }
 }

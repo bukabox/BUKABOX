@@ -6,19 +6,24 @@
   <title>BUKABOX — Financial Intelligence Dashboard v4.3-Sync</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='layout.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   
 </head>
 <body>
   <!-- Header -->
 <header class="navbar">
   <div class="content-wrap nav-inner">
+    <!-- Kiri: Logo -->
+    <div class="nav-left">
+      <span class="logo">💼 BUKABOX <small>— Financial Intelligence Dashboard</small></span>
+    </div>
 
     <!-- Tombol Burger -->
     <button class="nav-toggle" id="navToggle" aria-label="toggle menu" aria-expanded="false">☰</button>
 
     <!-- Menu Navigasi -->
     <nav class="nav-menu" id="navMenu">
+      <a href="{{ url_for('index') }}" class="btn-nav active">Dashboard</a>
+      <a class="btn-nav" href="{{ url_for('investment_panel') }}">Investment</a>
       {% if not session.get('logged_in') %}
         <a href="#" id="loginBtn" class="btn-nav">Login</a>
       {% endif %}
@@ -38,24 +43,17 @@
 </header>
 <div class="layout">
     <!-- ===== SIDEBAR ===== -->
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar">
       <div class="sidebar-header">
         <h2>BUKABOX</h2>
       </div>
       <nav class="menu">
-        <a href="{{ url_for('index') }}" class="menu-item {% if request.endpoint == 'index' %}active{% endif %}">
-          <i class="fa-solid fa-chart-line"></i>
-          <span>Dashboard</span>
-        </a>
-        <a href="{{ url_for('investment_panel') }}" class="menu-item {% if request.endpoint == 'investment_panel' %}active{% endif %}">
-          <i class="fa-solid fa-sack-dollar"></i>
-          <span>Investment</span>
-        </a>
-        <a href="{{ url_for('history_panel') }}" class="menu-item {% if request.endpoint.startswith('history') %}active{% endif %}">
-          <i class="fa-solid fa-calendar-days"></i>
-          <span>History</span>
-        </a>
-        
+        <a href="{{ url_for('index') }}" class="menu-item active">🏠 Dashboard</a>
+        <a href="{{ url_for('history') }}" class="menu-item">📅 History</a>
+        <a href="{{ url_for('investment_panel') }}" class="menu-item">💰 Investment</a>
+        <a href="{{ url_for('expense_panel') }}" class="menu-item">💸 Expenses</a>
+        <a href="{{ url_for('income_panel') }}" class="menu-item">📈 Income</a>
+        <a href="{{ url_for('emergency_panel') }}" class="menu-item">🩺 Emergency Fund</a>
       </nav>
       <div class="sidebar-footer">
         <small>v4.6</small>
@@ -72,5 +70,6 @@
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
 </body>
 </html>

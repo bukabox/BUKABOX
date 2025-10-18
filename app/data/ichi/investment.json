@@ -138,5 +138,55 @@
         "entry_amount": 5317490.0,
         "amount_idr": 5317490.0,
         "note": "Cicilan Kamera"
+    },
+    {
+        "category": "crypto",
+        "date": "2025-10-16",
+        "asset": "BTC",
+        "entry_price": 1890000000.0,
+        "entry_amount": 0.006349,
+        "amount_idr": 11999610.0,
+        "note": "DCA",
+        "timestamp": "2025-10-17T14:07:56.922696"
+    },
+    {
+        "category": "crypto",
+        "date": "2025-10-16",
+        "asset": "BTC",
+        "entry_price": 1820000000.0,
+        "entry_amount": 0.001099,
+        "amount_idr": 2000179.9999999998,
+        "note": "Operational",
+        "timestamp": "2025-10-17T14:08:27.570500"
+    },
+    {
+        "category": "crypto",
+        "date": "2025-10-16",
+        "asset": "BTC",
+        "entry_price": 1820000000.0,
+        "entry_amount": 0.000549,
+        "amount_idr": 999180.0,
+        "note": "Anak",
+        "timestamp": "2025-10-17T14:08:55.314229"
+    },
+    {
+        "category": "crypto",
+        "date": "2025-10-16",
+        "asset": "BTC",
+        "entry_price": 1820000000.0,
+        "entry_amount": 0.001099,
+        "amount_idr": 2000179.9999999998,
+        "note": "Operasional",
+        "timestamp": "2025-10-17T14:09:14.922547"
+    },
+    {
+        "category": "crypto",
+        "date": "2025-09-17",
+        "asset": "BTC",
+        "entry_price": 1820000000.0,
+        "entry_amount": 0.013736,
+        "amount_idr": 24999520.0,
+        "note": "Tes Beli",
+        "timestamp": "2025-10-17T18:11:32.805192"
     }
 ]

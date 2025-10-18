@@ -119,7 +119,7 @@ function openDetail(t) {
 // =========================================================
 const commonOpt = {
   responsive: true,
-  maintainAspectRatio: true,
+  maintainAspectRatio: false,
   aspectRatio: 1,
   plugins: {
     legend: { position: 'bottom', labels: { font: { size: 13 }, color: '#333' } },
