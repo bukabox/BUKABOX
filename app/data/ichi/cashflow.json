@@ -166,5 +166,33 @@
         "category": "Dana Darurat",
         "amount": 20000000.0,
         "note": "nganu"
+    },
+    {
+        "date": "2025-10-18",
+        "type": "investment",
+        "category": "Dana Darurat",
+        "amount": 20000000.0,
+        "note": "Setoran 1"
+    },
+    {
+        "date": "2025-10-18",
+        "type": "investment",
+        "category": "Dana Darurat",
+        "amount": 20000000.0,
+        "note": "Setoran 1"
+    },
+    {
+        "date": "2025-10-18",
+        "type": "investment",
+        "category": "Dana Darurat",
+        "amount": 1234.0,
+        "note": "nganu"
+    },
+    {
+        "date": "2025-10-18",
+        "type": "investment",
+        "category": "Dana Darurat",
+        "amount": 1234.0,
+        "note": "nganu"
     }
 ]

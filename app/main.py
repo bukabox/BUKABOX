@@ -448,6 +448,7 @@ def index():
     today = datetime.date.today()
     month_now = today.strftime("%Y-%m")
 
+    # === LOAD DATA ===
     income = load_json("income.json")
     cashflow = load_json("cashflow.json")
     investment = load_json("investment.json")
@@ -457,9 +458,12 @@ def index():
     crypto = get_crypto_prices()
     gold = get_gold_price()
 
-    # === Filter bulanan ===
+    # === FILTER BULAN AKTIF ===
     month_income = [i for i in income if same_month(i.get("date", ""), month_now)]
-    month_expense = [c for c in cashflow if c.get("type") == "expense" and same_month(c.get("date", ""), month_now)]
+    month_expense = [
+        c for c in cashflow
+        if c.get("type") == "expense" and same_month(c.get("date", ""), month_now)
+    ]
     month_invest = []
     for inv in investment:
         if same_month(inv.get("date", ""), month_now):
@@ -471,68 +475,76 @@ def index():
                 value = 0
             month_invest.append(value)
 
+    # === TOTAL DASAR ===
     total_income = sum(i.get("amount", 0) for i in month_income)
     total_expense = sum(c.get("amount", 0) for c in month_expense)
+
+    # === INVESTMENT ===
     total_invest_month = sum(month_invest)
 
-        # === Pengelompokan kategori (Cashflow Breakdown) ===
-    expense_operasional_categories = ["Konsumsi", "Household", "Tagihan", "Kesehatan", "Lain-lain"]
-    investment_saving_categories = ["Investment crypto", "Dana Darurat", "Loan", "Paylater"]
+    # Tambahkan investasi dari cashflow (termasuk Dana Darurat)
+    invest_from_cashflow = sum(
+        float(c.get("amount", 0))
+        for c in cashflow
+        if c.get("type") == "investment"
+    )
+    total_invest_month += invest_from_cashflow
 
-    # Total expense operasional
+    # === BUFFER (Active Balance) ===
+    buffer_balance = total_income - (total_expense + total_invest_month)
+    buffer_state = "positive" if buffer_balance >= 0 else "negative"
+
+    # === CASHFLOW BREAKDOWN ===
+    expense_operasional_categories = [
+        "Konsumsi", "Household", "Tagihan", "Kesehatan", "Lain-lain"
+    ]
+    investment_saving_categories = [
+        "Investment crypto", "Dana Darurat", "Loan", "Paylater"
+    ]
+
     total_expense_operasional = sum(
         float(c.get("amount", 0))
-        for c in month_expense
+        for c in cashflow
         if c.get("category") in expense_operasional_categories
     )
 
-    # Total investment & savings (alokasi non-konsumtif)
     total_investment_savings = sum(
         float(c.get("amount", 0))
-        for c in month_expense
+        for c in cashflow
         if c.get("category") in investment_saving_categories
     )
 
-
-
-    inv_crypto = sum(x.get("current_value", x.get("amount_idr", 0)) for x in investment if x.get("category") == "crypto")
-    inv_gold = sum(x.get("current_value", x.get("amount_idr", 0)) for x in investment if x.get("category") == "gold")
-    inv_land = sum(x.get("current_value", x.get("amount_idr", 0)) for x in investment if x.get("category") == "land")
-    inv_business = sum(x.get("current_value", x.get("amount_idr", 0)) for x in investment if x.get("category") == "business")
-    inv_stock = sum(x.get("current_value", x.get("amount_idr", 0)) for x in investment if x.get("category") == "stock")
+    # === PORTFOLIO VALUE ===
+    inv_crypto = sum(
+        x.get("current_value", x.get("amount_idr", 0))
+        for x in investment if x.get("category") == "crypto"
+    )
+    inv_gold = sum(
+        x.get("current_value", x.get("amount_idr", 0))
+        for x in investment if x.get("category") == "gold"
+    )
+    inv_land = sum(
+        x.get("current_value", x.get("amount_idr", 0))
+        for x in investment if x.get("category") == "land"
+    )
+    inv_business = sum(
+        x.get("current_value", x.get("amount_idr", 0))
+        for x in investment if x.get("category") == "business"
+    )
+    inv_stock = sum(
+        x.get("current_value", x.get("amount_idr", 0))
+        for x in investment if x.get("category") == "stock"
+    )
     total_port = inv_crypto + inv_gold + inv_land + inv_business + inv_stock
 
-
-    # === Emergency Fund ===
-    emergency = load_json("emergency.json")
+    # === EMERGENCY FUND ===
     total_emergency = sum(e.get("amount", 0) for e in emergency)
     target1, target2 = 120_000_000, 240_000_000
     progress1 = min(100, (total_emergency / target1) * 100) if target1 else 0
     progress2 = min(100, (total_emergency / target2) * 100) if target2 else 0
 
-    buffer_balance = total_income - (total_expense + total_invest_month)
-    buffer_state = "positive" if buffer_balance >= 0 else "negative"
-
-    # Ambil bulan aktif
-    current_month = datetime.date.today().strftime("%Y-%m")
-
-    # Filter income & expense bulan aktif
-    income_month = [i for i in income if i.get("date", "").startswith(current_month)]
-    expense_month = [c for c in cashflow if c.get("type") == "expense" and c.get("date", "").startswith(current_month)]
-    invest_month = [i for i in investment if i.get("date", "").startswith(current_month)]
-
-    # Hitung total bulan berjalan
-    total_income = sum(float(i.get("amount", 0)) for i in income_month)
-    total_expense = sum(float(c.get("amount", 0)) for c in expense_month)
-    total_invest_month = sum(float(i.get("amount_idr", i.get("amount", 0))) for i in invest_month)
-
-
-    # === Buffer baru (bulan berjalan) ===
-    buffer_balance = total_income - (total_expense + total_invest_month)
-
     # === CRYPTO ACCUMULATION (BTC utama / operasional / anak) ===
     tokens = {}
-
     for inv in investment:
         if inv.get("category") != "crypto":
             continue
@@ -540,10 +552,6 @@ def index():
         sym = inv.get("asset", "").upper().strip()
         note = (inv.get("note") or "").strip().lower()
 
-        # cetak semua untuk debug — posisi di sini
-        print("DEBUG NOTE:", sym, "| note =", note)
-
-        # --- pastikan pembeda BTC berdasar catatan ---
         if sym == "BTC" and note == "operasional":
             key = "BTC Operasional"
         elif sym == "BTC" and note == "anak":
@@ -569,11 +577,13 @@ def index():
             tokens[key]["total_coin"] += entry_amount
             tokens[key]["current_value"] += now_value
 
-    # --- hitung average & pnl ---
     crypto_accumulation = []
     for sym, t in tokens.items():
         avg_price = (t["total_amount"] / t["total_coin"]) if t["total_coin"] else 0
-        pnl = ((t["current_value"] - t["total_amount"]) / t["total_amount"] * 100) if t["total_amount"] else 0
+        pnl = (
+            (t["current_value"] - t["total_amount"]) / t["total_amount"] * 100
+            if t["total_amount"] else 0
+        )
         crypto_accumulation.append({
             "token": sym,
             "total_modal": t["total_amount"],
@@ -582,26 +592,42 @@ def index():
             "current_value": t["current_value"],
             "pnl": pnl
         })
+
+    # === MONTHLY HISTORY ===
     monthly_data = get_monthly_summary()
 
-
+    # === RENDER TEMPLATE ===
     return render_template(
         "index.html",
         today=today.isoformat(),
-        income=income, cashflow=month_expense, investment=investment, emergency=emergency,
-        total_income=total_income, total_expense=total_expense,
-        total_invest_month=total_invest_month, total_port=total_port,
-        inv_crypto=inv_crypto, inv_gold=inv_gold, inv_land=inv_land, inv_business=inv_business,
-        crypto=crypto, gold=gold,
-        total_emergency=total_emergency, progress1=progress1, progress2=progress2,
-        target1=target1, target2=target2, buffer_balance=buffer_balance, buffer_state=buffer_state,
+        income=income,
+        cashflow=month_expense,
+        investment=investment,
+        emergency=emergency,
+        total_income=total_income,
+        total_expense=total_expense,
+        total_invest_month=total_invest_month,
+        total_port=total_port,
+        inv_crypto=inv_crypto,
+        inv_gold=inv_gold,
+        inv_land=inv_land,
+        inv_business=inv_business,
+        crypto=crypto,
+        gold=gold,
+        total_emergency=total_emergency,
+        progress1=progress1,
+        progress2=progress2,
+        target1=target1,
+        target2=target2,
+        buffer_balance=buffer_balance,
+        buffer_state=buffer_state,
         crypto_accumulation=crypto_accumulation,
         investment_reduce=investment_reduce,
         monthly=monthly_data,
         total_expense_operasional=total_expense_operasional,
         total_investment_savings=total_investment_savings
-
     )
+    
 @app.route("/investment")
 def investment_panel():
     today = datetime.date.today()
