@@ -35,9 +35,7 @@
 .chart-legend li[data-label*="YouTube"] span { background-color: var(--color-youtube); }
 .chart-legend li[data-label*="Etsy"] span    { background-color: var(--color-etsy); }
 .chart-legend li[data-label*="Design"] span  { background-color: var(--color-freelance); }
-html {
-  -webkit-text-size-adjust: 100%; /* mencegah Safari auto-resize font */
-}
+
 * { box-sizing: border-box; }
 body {
   font-family: 'Poppins', sans-serif;
@@ -45,11 +43,6 @@ body {
   background: var(--bg);
   color: var(--text);
   font-weight:300 !important;
-}
-body {
-  min-width: 970px;     /* layout tidak mengecil di bawah 970px */
-  margin: 0;
-  padding: 0;
 }
 h1,h2,h3,h4 {font-weight:300}
 /* ===== HEADER STYLE ===== */
