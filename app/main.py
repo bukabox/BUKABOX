@@ -868,7 +868,21 @@ def add_invest():
         }
         add_invest_record(cat, payload)
 
+    # 🟩 catat ke cashflow agar muncul di summary
+    cash = load_json("cashflow.json")
+    if not isinstance(cash, list):
+        cash = []
+    cash.append({
+        "date": date,
+        "type": "investment",
+        "category": f"Investment {cat.capitalize()}",
+        "amount": float(payload.get("amount_idr", 0)),
+        "note": payload.get("note", "")
+    })
+    save_json("cashflow.json", cash)
+
     return redirect(url_for("index"))
+
 
 @app.route("/upload_investment_json", methods=["POST"])
 def upload_investment_json():
@@ -1059,7 +1073,7 @@ def add_emergency():
 
     cash.append({
         "date": request.form["date"],
-        "type": "expense",
+        "type": "investment",
         "category": "Dana Darurat",
         "amount": float(request.form["amount"].replace(".", "")),
         "note": request.form.get("note", "")
