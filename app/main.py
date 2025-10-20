@@ -37,6 +37,8 @@ def user_data_path(username, filename):
 
     return os.path.join(DATA_ROOT, username, filename)
 
+def current_month_label():
+    return datetime.datetime.now().strftime("%Y-%m")
 
 # --- Custom Jinja Filters ---
 @app.template_filter('idr')
@@ -823,7 +825,7 @@ def add_expense():
         # === 3️⃣ Simpan juga ke snapshot bulan aktif ===
         try:
             today = datetime.date.today()
-            month_label = today.strftime("%Y-%m")
+            month_label = current_month_label()
             user_dir = get_user_dir()
             history_dir = os.path.join(user_dir, "history")
             os.makedirs(history_dir, exist_ok=True)
@@ -1253,7 +1255,8 @@ def save_month_snapshot():
     - Struktur investment disesuaikan agar tampil lengkap di tabel history_detail
     """
     today = datetime.date.today()
-    month_label = today.strftime("%Y-%m")
+    month_label = current_month_label()
+
 
     # === Ambil data utama ===
     income = load_json("income.json")
@@ -1265,8 +1268,8 @@ def save_month_snapshot():
             return False
         try:
             d = datetime.datetime.strptime(date_str, "%Y-%m-%d")
-            return d.strftime("%Y-%m") == month_label
-        except Exception:
+            return d.strftime("%Y-%m") == current_month_label()
+        except ValueError:
             return False
 
     # --- Ambil data bulan ini ---
