@@ -11,11 +11,14 @@ from functools import wraps
 from flask import session
 from werkzeug.security import generate_password_hash, check_password_hash
 import calendar
+from helpers import load_json
+from networth_integration_v46 import networth_bp
 
 
 app = Flask(__name__)
 
 app.secret_key = os.getenv("FLASK_SECRET", "dev_secret")
+app.register_blueprint(networth_bp)
 
 def user_data_path(username, filename):
     """Path adaptif (lokal vs Fly.io)"""
@@ -132,14 +135,13 @@ def same_month(date_str, month):
 import calendar  # tambahkan sekali di bagian import atas
 
 def get_monthly_summary():
-    """Hitung total income, expense, dan investment per bulan (1–12) untuk user aktif."""
-    user_dir = get_user_dir()
+    """Hitung total income, expense, dan investment per bulan tanpa double counting dan termasuk dana darurat"""
     income = load_json("income.json")
     cashflow = load_json("cashflow.json")
-    investment = load_json("investment.json")
 
     monthly = {m: {"income": 0, "expense": 0, "investment": 0} for m in range(1, 13)}
 
+    # === INCOME ===
     for i in income:
         try:
             d = datetime.datetime.strptime(i.get("date", ""), "%Y-%m-%d")
@@ -147,29 +149,36 @@ def get_monthly_summary():
         except Exception:
             continue
 
-    for e in cashflow:
-        if e.get("type") != "expense":
-            continue
+    # === EXPENSE & INVESTMENT (termasuk dana darurat) ===
+    for c in cashflow:
         try:
-            d = datetime.datetime.strptime(e.get("date", ""), "%Y-%m-%d")
-            monthly[d.month]["expense"] += float(e.get("amount", 0))
+            d = datetime.datetime.strptime(c.get("date", ""), "%Y-%m-%d")
         except Exception:
             continue
 
-    for inv in investment:
-        try:
-            d = datetime.datetime.strptime(inv.get("date", ""), "%Y-%m-%d")
-            val = float(inv.get("amount_idr", inv.get("amount", 0)))
-            monthly[d.month]["investment"] += val
-        except Exception:
-            continue
+        t = c.get("type")
+        cat = c.get("category", "").lower()
+        a = float(c.get("amount", 0))
 
+        if t == "expense":
+            monthly[d.month]["expense"] += a
+        elif t == "investment":
+            # semua investasi termasuk dana darurat
+            monthly[d.month]["investment"] += a
+
+    # === OUTPUT ===
     labels = [calendar.month_abbr[m] for m in range(1, 13)]
     income_data = [monthly[m]["income"] for m in range(1, 13)]
     expense_data = [monthly[m]["expense"] for m in range(1, 13)]
     invest_data = [monthly[m]["investment"] for m in range(1, 13)]
 
-    return {"labels": labels, "income": income_data, "expense": expense_data, "investment": invest_data}
+    return {
+        "labels": labels,
+        "income": income_data,
+        "expense": expense_data,
+        "investment": invest_data,
+    }
+
 
 
 
@@ -454,89 +463,30 @@ def index():
     investment = load_json("investment.json")
     emergency = load_json("emergency.json")
     investment_reduce = load_json("investment_reduce.json")
+    networth = load_json("networth.json")
 
     crypto = get_crypto_prices()
     gold = get_gold_price()
 
     # === FILTER BULAN AKTIF ===
     month_income = [i for i in income if same_month(i.get("date", ""), month_now)]
-    month_expense = [
-        c for c in cashflow
-        if c.get("type") == "expense" and same_month(c.get("date", ""), month_now)
-    ]
-    month_invest = []
-    for inv in investment:
-        if same_month(inv.get("date", ""), month_now):
-            if inv.get("entry_price") and inv.get("entry_amount"):
-                value = inv["entry_price"] * inv["entry_amount"]
-            elif inv.get("amount_idr"):
-                value = inv["amount_idr"]
-            else:
-                value = 0
-            month_invest.append(value)
+    month_cashflow = [c for c in cashflow if same_month(c.get("date", ""), month_now)]
 
-        # === TOTAL DASAR ===
+    # === HITUNG TOTAL ===
     total_income = sum(float(i.get("amount", 0)) for i in month_income)
+    total_expense = sum(float(c.get("amount", 0)) for c in month_cashflow if c.get("type") == "expense")
+    total_investment_savings = sum(float(c.get("amount", 0)) for c in month_cashflow if c.get("type") == "investment")
 
-    # === EXPENSE (SEMUA ALAIRAN KELUAR) ===
-    # Termasuk operasional, dana darurat, dan semua investasi
-    total_expense = sum(
-        float(c.get("amount", 0))
-        for c in cashflow
-        if c.get("type") in ["expense", "investment"]
-    )
-
-    # === OPERASIONAL SAJA (untuk breakdown tampilan) ===
-    total_expense_operasional = sum(
-        float(c.get("amount", 0))
-        for c in cashflow
-        if c.get("type") == "expense"
-    )
-
-    # === INVESTMENT & SAVING (Dana Darurat + Investasi) ===
-    total_investment_savings = sum(
-        float(c.get("amount", 0))
-        for c in cashflow
-        if c.get("type") == "investment"
-    )
-
-    # === BUFFER (Active Balance) ===
-    # income - expense (tidak double count)
-    buffer_balance = total_income - total_expense
+    # === BUFFER (saldo tersisa nyata) ===
+    buffer_balance = total_income - (total_expense + total_investment_savings)
     buffer_state = "positive" if buffer_balance >= 0 else "negative"
 
-
-
-
-    # === CASHFLOW BREAKDOWN ===
-    expense_operasional_categories = [
-        "Konsumsi", "Household", "Tagihan", "Kesehatan", "Lain-lain"
-    ]
-    investment_saving_categories = [
-        "Investment crypto", "Dana Darurat", "Loan", "Paylater"
-    ]
-
     # === PORTFOLIO VALUE ===
-    inv_crypto = sum(
-        x.get("current_value", x.get("amount_idr", 0))
-        for x in investment if x.get("category") == "crypto"
-    )
-    inv_gold = sum(
-        x.get("current_value", x.get("amount_idr", 0))
-        for x in investment if x.get("category") == "gold"
-    )
-    inv_land = sum(
-        x.get("current_value", x.get("amount_idr", 0))
-        for x in investment if x.get("category") == "land"
-    )
-    inv_business = sum(
-        x.get("current_value", x.get("amount_idr", 0))
-        for x in investment if x.get("category") == "business"
-    )
-    inv_stock = sum(
-        x.get("current_value", x.get("amount_idr", 0))
-        for x in investment if x.get("category") == "stock"
-    )
+    inv_crypto = sum(x.get("current_value", x.get("amount_idr", 0)) for x in investment if x.get("category") == "crypto")
+    inv_gold = sum(x.get("current_value", x.get("amount_idr", 0)) for x in investment if x.get("category") == "gold")
+    inv_land = sum(x.get("current_value", x.get("amount_idr", 0)) for x in investment if x.get("category") == "land")
+    inv_business = sum(x.get("current_value", x.get("amount_idr", 0)) for x in investment if x.get("category") == "business")
+    inv_stock = sum(x.get("current_value", x.get("amount_idr", 0)) for x in investment if x.get("category") == "stock")
     total_port = inv_crypto + inv_gold + inv_land + inv_business + inv_stock
 
     # === EMERGENCY FUND ===
@@ -545,7 +495,7 @@ def index():
     progress1 = min(100, (total_emergency / target1) * 100) if target1 else 0
     progress2 = min(100, (total_emergency / target2) * 100) if target2 else 0
 
-    # === CRYPTO ACCUMULATION (BTC utama / operasional / anak) ===
+    # === CRYPTO ACCUMULATION ===
     tokens = {}
     for inv in investment:
         if inv.get("category") != "crypto":
@@ -582,10 +532,7 @@ def index():
     crypto_accumulation = []
     for sym, t in tokens.items():
         avg_price = (t["total_amount"] / t["total_coin"]) if t["total_coin"] else 0
-        pnl = (
-            (t["current_value"] - t["total_amount"]) / t["total_amount"] * 100
-            if t["total_amount"] else 0
-        )
+        pnl = ((t["current_value"] - t["total_amount"]) / t["total_amount"] * 100) if t["total_amount"] else 0
         crypto_accumulation.append({
             "token": sym,
             "total_modal": t["total_amount"],
@@ -597,18 +544,20 @@ def index():
 
     # === MONTHLY HISTORY ===
     monthly_data = get_monthly_summary()
+    liabilities_path = os.path.join(get_user_dir(), "liabilities.json")
+    liabilities = load_json(liabilities_path) if os.path.exists(liabilities_path) else []
 
     # === RENDER TEMPLATE ===
     return render_template(
         "index.html",
         today=today.isoformat(),
         income=income,
-        cashflow=month_expense,
+        cashflow=month_cashflow,
         investment=investment,
         emergency=emergency,
         total_income=total_income,
         total_expense=total_expense,
-        total_invest_month=total_investment_savings,  # ← ubah sumber datanya langsung di sini
+        total_invest_month=total_investment_savings,
         total_port=total_port,
         inv_crypto=inv_crypto,
         inv_gold=inv_gold,
@@ -626,9 +575,12 @@ def index():
         crypto_accumulation=crypto_accumulation,
         investment_reduce=investment_reduce,
         monthly=monthly_data,
-        total_expense_operasional=total_expense_operasional,
-        total_investment_savings=total_investment_savings
+        total_expense_operasional=total_expense,
+        total_investment_savings=total_investment_savings,
+        networth=networth,
+        liabilities=liabilities
     )
+
     
 @app.route("/investment")
 def investment_panel():
@@ -761,60 +713,154 @@ def investment_panel():
 @app.route("/add_income", methods=["POST"])
 @login_required
 def add_income():
-    data = load_json("income.json")
-    data.append({
-        "date": request.form["date"],
-        "stream": request.form["stream"],
-        "amount": float(request.form["amount"].replace(".", "")),
-        "note": request.form.get("note", ""),
-    })
-    save_json("income.json", data)
-    return redirect(url_for("index"))
-
-@app.route("/add_expense", methods=["POST"])
-@login_required
-def add_expense():
-    """Tambah pengeluaran baru"""
-    expense = load_json("expense.json")
-    cash = load_json("cashflow.json")
-
+    """Tambah pendapatan baru dan sinkronkan ke cashflow"""
     date = request.form.get("date", "")
-    category = request.form.get("category", "")
+    stream = request.form.get("stream", "")
     note = request.form.get("note", "")
-    raw_amount = request.form.get("amount", "0")
-    category = request.form.get("category", "").strip().title()
-
-
     try:
-        amount = float(raw_amount.replace(".", "").replace(",", ""))
+        amount = float(request.form.get("amount", "0").replace(".", "").replace(",", ""))
     except:
         amount = 0
 
-    if amount <= 0:
-        flash("Nominal tidak valid.", "warning")
-        return redirect(url_for("index"))
-
-    # Simpan ke expense.json
-    expense.append({
+    # Simpan ke income.json
+    income = load_json("income.json")
+    income.append({
         "date": date,
-        "category": category,
+        "stream": stream,
         "amount": amount,
         "note": note
     })
-    save_json("expense.json", expense)
+    save_json("income.json", income)
 
-    # Catat ke cashflow.json
+    # 🟩 Tambahkan juga ke cashflow.json agar history sinkron
+    cash = load_json("cashflow.json")
+    if not isinstance(cash, list):
+        cash = []
+
     cash.append({
         "date": date,
-        "type": "expense",
-        "category": category,
+        "type": "income",
+        "category": stream,
         "amount": amount,
         "note": note
     })
     save_json("cashflow.json", cash)
 
-    flash(f"Pengeluaran {category} sebesar {fmt_idr(amount)} ditambahkan.", "success")
+    flash(f"Pendapatan {stream} sebesar {fmt_idr(amount)} ditambahkan.", "success")
     return redirect(url_for("index"))
+
+
+@app.route("/add_expense", methods=["POST"])
+@login_required
+def add_expense():
+    """Tambah pengeluaran baru (termasuk otomatis update pelunasan loan & Net Worth)."""
+    try:
+        expense = load_json("expense.json")
+        cash = load_json("cashflow.json")
+
+        date = request.form.get("date", "")
+        category = request.form.get("category", "").strip().title()
+        note = request.form.get("note", "").strip()
+        raw_amount = request.form.get("amount", "0")
+
+        try:
+            amount = float(raw_amount.replace(".", "").replace(",", ""))
+        except:
+            amount = 0
+
+        if amount <= 0:
+            flash("Nominal tidak valid.", "warning")
+            return redirect(url_for("index"))
+
+        # === Simpan ke expense.json ===
+        expense.append({
+            "date": date,
+            "category": category,
+            "amount": amount,
+            "note": note
+        })
+        save_json("expense.json", expense)
+
+        # === Catat ke cashflow.json ===
+        cash.append({
+            "date": date,
+            "type": "expense",
+            "category": category,
+            "amount": amount,
+            "note": note
+        })
+        save_json("cashflow.json", cash)
+
+        # === 1️⃣ Jika kategori Loan → kurangi liabilitas aktif ===
+        if category.lower() == "loan":
+            try:
+                liabilities_path = os.path.join(get_user_dir(), "liabilities.json")
+                liabilities = load_json(liabilities_path)
+
+                for l in liabilities:
+                    l_id = l.get("id", "")
+                    if l_id == note or l.get("note", "") == note:
+                        paid = float(l.get("paid", 0)) + amount
+                        total = float(l.get("amount", 0))
+                        l["paid"] = paid
+                        l["remaining"] = max(total - paid, 0)
+                        l["progress"] = round((paid / total) * 100, 1) if total > 0 else 0
+                        break
+
+                save_json(liabilities_path, liabilities)
+                print(f"[LOAN PAYMENT] Pembayaran {note} sebesar Rp{amount:,.0f} dicatat.")
+            except Exception as e:
+                print("[LOAN UPDATE ERROR]", e)
+
+        # === 2️⃣ Update Net Worth real-time ===
+        try:
+            from networth_integration_v46 import calculate_networth
+            summary = calculate_networth()
+            save_json("networth.json", summary)
+        except Exception as e:
+            print("[NETWORTH UPDATE ERROR]", e)
+
+        # === 3️⃣ Simpan juga ke snapshot bulan aktif ===
+        try:
+            today = datetime.date.today()
+            month_label = today.strftime("%Y-%m")
+            user_dir = get_user_dir()
+            history_dir = os.path.join(user_dir, "history")
+            os.makedirs(history_dir, exist_ok=True)
+            snapshot_path = os.path.join(history_dir, f"{month_label}.json")
+
+            if os.path.exists(snapshot_path):
+                with open(snapshot_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            else:
+                data = {"month": month_label, "summary": {}, "entries": {}}
+
+            # Tambahkan transaksi baru ke entries.expense
+            data.setdefault("entries", {}).setdefault("expense", []).append({
+                "date": date,
+                "category": category,
+                "note": note,
+                "amount": amount
+            })
+
+            # Perbarui summary networth
+            data["summary"]["networth"] = summary
+
+            with open(snapshot_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+
+            print(f"[SNAPSHOT] Net Worth bulan {month_label} diperbarui setelah pengeluaran.")
+        except Exception as e:
+            print("[EXPENSE SNAPSHOT UPDATE ERROR]", e)
+
+        flash(f"Pengeluaran {category} sebesar {fmt_idr(amount)} ditambahkan.", "success")
+        return redirect(url_for("index"))
+
+    except Exception as e:
+        print("[ADD_EXPENSE ERROR]", e)
+        flash(f"Gagal menambahkan pengeluaran: {e}", "danger")
+        return redirect(url_for("index"))
+
 
 
 @app.route("/add_cashflow", methods=["POST"])
@@ -831,21 +877,11 @@ def add_cashflow():
     save_json("cashflow.json", data)
     return redirect(url_for("index"))
 def add_invest_record(category, payload):
-    """Tambahkan data investasi ke investment.json dan sinkronkan ke cashflow"""
+    """Tambahkan data investasi ke investment.json tanpa menambah ke cashflow"""
     investment = load_json("investment.json")
     investment.append(payload)
     save_json("investment.json", investment)
 
-    # Catat ke cashflow sebagai expense
-    cash = load_json("cashflow.json")
-    cash.append({
-        "date": payload["date"],
-        "type": "expense",
-        "category": f"Investment {category}",
-        "amount": payload.get("amount_idr", 0),
-        "note": payload.get("note", "")
-    })
-    save_json("cashflow.json", cash)
 
 @app.route("/add_invest", methods=["POST"])
 @login_required
@@ -1169,39 +1205,61 @@ def history_panel():
     histories = []
 
     for fname in files:
+        month = fname.replace(".json", "")
         path = os.path.join(history_dir, fname)
         with open(path, encoding="utf-8") as f:
-            data = json.load(f)
+            _ = json.load(f)  # isi file hanya dipakai ambil bulan
 
-        summary = data.get("summary", {})
+        cashflow = load_json("cashflow.json")
+
+        # Ambil data cashflow bulan ini
+        income_total = sum(
+            float(c.get("amount", 0))
+            for c in cashflow if c.get("type") == "income" and c.get("date", "").startswith(month)
+        )
+        expense_total = sum(
+            float(c.get("amount", 0))
+            for c in cashflow if c.get("type") == "expense" and c.get("date", "").startswith(month)
+        )
+        invest_total = sum(
+            float(c.get("amount", 0))
+            for c in cashflow if c.get("type") == "investment" and c.get("date", "").startswith(month)
+        )
+
+        buffer_real = income_total - (expense_total + invest_total)
+
         histories.append({
-            "month": fname.replace(".json", ""),
-            "total_income": summary.get("income", 0),
-            "total_expense": summary.get("expense", 0),
-            "total_investment": summary.get("investment", 0)
+            "month": month,
+            "total_income": income_total,
+            "total_expense": expense_total,
+            "total_investment": invest_total,
+            "buffer": buffer_real
         })
 
-    # kirim ke template
     monthly_data = get_monthly_summary()
     return render_template("history.html", histories=histories, monthly=monthly_data)
+
+
 
 
 @app.route("/history/snapshot")
 @login_required
 def save_month_snapshot():
     """
-    Simpan snapshot bulanan ke folder pribadi user.
-    Setiap user punya folder /data/<username>/history/
+    Simpan snapshot bulanan yang konsisten dan sinkron:
+    - Income diambil dari income.json
+    - Expense & Investment dari cashflow.json
+    - Investment mencakup Dana Darurat dan aset lain
+    - Struktur investment disesuaikan agar tampil lengkap di tabel history_detail
     """
     today = datetime.date.today()
     month_label = today.strftime("%Y-%m")
 
-    # --- Ambil data dari folder user aktif ---
+    # === Ambil data utama ===
     income = load_json("income.json")
     cashflow = load_json("cashflow.json")
-    investment = load_json("investment.json")
 
-    # --- Fungsi bantu filter bulan aktif ---
+    # --- Filter berdasarkan bulan aktif ---
     def same_month(date_str):
         if not date_str:
             return False
@@ -1211,29 +1269,78 @@ def save_month_snapshot():
         except Exception:
             return False
 
-    # --- Filter data bulan ini ---
+    # --- Ambil data bulan ini ---
     month_income = [i for i in income if same_month(i.get("date", ""))]
     month_expense = [c for c in cashflow if c.get("type") == "expense" and same_month(c.get("date", ""))]
-    month_invest = [i for i in investment if same_month(i.get("date", ""))]
+    month_investment = [c for c in cashflow if c.get("type") == "investment" and same_month(c.get("date", ""))]
 
-    # --- Hitung ringkasan ---
+    # --- Konversi struktur investment agar tampil rapi di tabel ---
+    month_investment_fixed = []
+    for c in month_investment:
+        category = c.get("category", "")
+        # bersihkan prefix "Investment " biar tampil seperti "Crypto", "Dana Darurat", dll.
+        asset_name = category.replace("Investment", "").strip() or "Dana Darurat"
+        month_investment_fixed.append({
+            "category": category,
+            "asset": asset_name,
+            "date": c.get("date", ""),
+            "amount_idr": float(c.get("amount", 0)),
+            "note": c.get("note", "")
+        })
+
+    # --- Hitung total ---
+    total_income = sum(float(i.get("amount", 0)) for i in month_income)
+    total_expense = sum(float(c.get("amount", 0)) for c in month_expense)
+    total_investment = sum(float(c.get("amount", 0)) for c in month_investment)
+    buffer_balance = total_income - (total_expense + total_investment)
+
+        # --- Ambil referensi dari investment.json untuk melengkapi asset ---
+    invest_full = load_json("investment.json")
+
+    month_investment_fixed = []
+    for c in month_investment:
+        category = c.get("category", "")
+        note = (c.get("note") or "").strip().lower()
+
+        # Default asset name dari kategori
+        asset_name = category.replace("Investment", "").strip() or "Dana Darurat"
+
+        # Jika kategori adalah Investment Crypto, coba cocokkan dengan investment.json
+        if "crypto" in category.lower():
+            match = next(
+                (i for i in invest_full if i.get("category", "").lower() == "crypto" and same_month(i.get("date", ""))),
+                None
+            )
+            if match:
+                asset_name = match.get("asset", asset_name)
+
+        month_investment_fixed.append({
+            "category": category,
+            "asset": asset_name,
+            "date": c.get("date", ""),
+            "amount_idr": float(c.get("amount", 0)),
+            "note": c.get("note", "")
+        })
+
+    # --- Susun struktur snapshot ---
     summary = {
-        "income": sum(float(i.get("amount", 0)) for i in month_income),
-        "expense": sum(float(c.get("amount", 0)) for c in month_expense),
-        "investment": sum(float(i.get("amount_idr", i.get("amount", 0))) for i in month_invest),
+        "income": total_income,
+        "expense": total_expense,
+        "investment": total_investment,
+        "buffer": buffer_balance
     }
-    summary["buffer"] = summary["income"] - (summary["expense"] + summary["investment"])
 
-    # --- Struktur snapshot ---
+    entries = {
+        "income": month_income,
+        "expense": month_expense,
+        "investment": month_investment_fixed
+    }
+
     snapshot = {
         "month": month_label,
         "timestamp": today.isoformat(),
         "summary": summary,
-        "entries": {
-            "income": month_income,
-            "expense": month_expense,
-            "investment": month_invest,
-        },
+        "entries": entries
     }
 
     # --- Simpan ke folder user ---
@@ -1245,12 +1352,14 @@ def save_month_snapshot():
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(snapshot, f, indent=2, ensure_ascii=False)
         print(f"[Snapshot] {session.get('username')} → {out_path}")
-        flash(f"Snapshot bulan {month_label} tersimpan di folder pribadi Anda.", "success")
+        flash(f"Snapshot bulan {month_label} tersimpan dengan benar.", "success")
     except Exception as e:
         print(f"[ERROR] Gagal menyimpan snapshot: {e}")
         flash("Gagal menyimpan snapshot bulanan.", "danger")
 
     return redirect(url_for("history_panel"))
+
+
 
 
 
@@ -1263,26 +1372,40 @@ def history_detail(month):
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    summary = data.get("summary", {})
     entries = data.get("entries", {})
 
-    # cashflow tetap pakai summary
-    total_income = float(summary.get("income", 0))
-    total_expense = float(summary.get("expense", 0))
-    total_invest_month = float(summary.get("investment", 0))
-    buffer_balance = total_income - (total_expense + total_invest_month)
+    # === Ambil ulang dari cashflow ===
+    cash = load_json("cashflow.json")
+    income_total = sum(
+        float(c.get("amount", 0))
+        for c in cash if c.get("type") == "income" and c.get("date", "").startswith(month)
+    )
+    expense_total = sum(
+        float(c.get("amount", 0))
+        for c in cash if c.get("type") == "expense" and c.get("date", "").startswith(month)
+    )
+    invest_total = sum(
+        float(c.get("amount", 0))
+        for c in cash if c.get("type") == "investment" and c.get("date", "").startswith(month)
+    )
 
-    # 🟢 ambil semua data investasi dari investment.json
+    buffer_balance = income_total - (expense_total + invest_total)
+
     inv_data = get_all_investment_totals()
 
     return render_template(
         "history_detail.html",
         month=month,
-        summary=summary,
+        summary={
+            "income": income_total,
+            "expense": expense_total,
+            "investment": invest_total,
+            "buffer": buffer_balance
+        },
         entries=entries,
-        total_income=total_income,
-        total_expense=total_expense,
-        total_invest_month=total_invest_month,
+        total_income=income_total,
+        total_expense=expense_total,
+        total_invest_month=invest_total,
         buffer_balance=buffer_balance,
         inv_crypto=inv_data["crypto"],
         inv_gold=inv_data["gold"],
@@ -1293,9 +1416,20 @@ def history_detail(month):
 
 
 
-
 @app.route("/history/<month>/pdf")
 def export_history_pdf(month):
+    """
+    Ekspor laporan bulanan ke PDF gaya profesional (font Poppins + layout rapi).
+    Semua tabel seragam, warna pastel senada dashboard.
+    """
+    import os
+    from reportlab.lib.pagesizes import A4
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib import colors
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+
     path = os.path.join(HISTORY_DIR, f"{month}.json")
     if not os.path.exists(path):
         return f"Data {month} tidak ditemukan", 404
@@ -1306,169 +1440,262 @@ def export_history_pdf(month):
     summary = data.get("summary", {})
     entries = data.get("entries", {})
 
-    # --- Siapkan PDF ---
-    from reportlab.lib.pagesizes import A4
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-    from reportlab.lib.styles import getSampleStyleSheet
-    from reportlab.lib import colors
+        # === FONT POPPINS ===
+    base_font = "Helvetica"
 
+    # Coba prioritas Poppins-Light untuk efek tipis (setara font-weight 200)
+    light_candidates = [
+        "/usr/share/fonts/truetype/poppins/Poppins-Light.ttf",
+        "/Library/Fonts/Poppins-Light.ttf",
+    ]
+
+    regular_candidates = [
+        "/usr/share/fonts/truetype/poppins/Poppins-Regular.ttf",
+        "/Library/Fonts/Poppins-Regular.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    ]
+
+    try:
+        # Coba daftarkan font tipis dulu
+        for fp in light_candidates:
+            if os.path.exists(fp):
+                pdfmetrics.registerFont(TTFont("PoppinsLight", fp))
+                base_font = "PoppinsLight"
+                break
+
+        # Jika belum ketemu font tipis, pakai Poppins-Regular
+        if base_font == "Helvetica":
+            for fp in regular_candidates:
+                if os.path.exists(fp):
+                    pdfmetrics.registerFont(TTFont("Poppins", fp))
+                    base_font = "Poppins"
+                    break
+
+    except Exception as e:
+        print(f"[FONT] Gagal memuat Poppins: {e}")
+
+
+    # === SETUP PDF ===
     filename = f"history_{month}.pdf"
-    pdf_path = os.path.join(get_user_dir(), "reports", filename)
-    doc = SimpleDocTemplate(pdf_path, pagesize=A4)
+    reports_dir = os.path.join(get_user_dir(), "reports")
+    os.makedirs(reports_dir, exist_ok=True)
+    pdf_path = os.path.join(reports_dir, filename)
+
+    doc = SimpleDocTemplate(
+        pdf_path,
+        pagesize=A4,
+        rightMargin=36,
+        leftMargin=36,
+        topMargin=40,
+        bottomMargin=40
+    )
+
     styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name="Header", fontName=base_font, fontSize=18,
+                              leading=24, textColor=colors.HexColor("#2F3E46"), spaceAfter=14))
+    styles.add(ParagraphStyle(name="SubHeader", fontName=base_font, fontSize=12,
+                              leading=16, textColor=colors.HexColor("#495057"), spaceAfter=8))
+    styles.add(ParagraphStyle(name="NormalText", fontName=base_font, fontSize=10,
+                          leading=14, textColor=colors.black))
+
+
     elements = []
 
-    # --- Judul ---
-    elements.append(Paragraph(f"<b>Rekap Bulanan - {month}</b>", styles["Title"]))
-    elements.append(Spacer(1, 12))
+    # === HEADER ===
+    elements.append(Paragraph("BUKABOX Financial Report", styles["Header"]))
+    elements.append(Paragraph(f"Periode: {month}", styles["SubHeader"]))
+    elements.append(Spacer(1, 10))
 
-    # === Donut Chart (Pie Persentase) ===
+    # === DONUT CHART ===
     try:
         from reportlab.graphics.shapes import Drawing
         from reportlab.graphics.charts.piecharts import Pie
 
-        total_income = summary.get("income", 0)
-        total_expense = summary.get("expense", 0)
-        total_invest = summary.get("investment", 0)
-        total_buffer = abs(summary.get("buffer", 0))  # buffer bisa negatif
+        total_income = float(summary.get("income", 0) or 0)
+        total_expense = float(summary.get("expense", 0) or 0)
+        total_invest = float(summary.get("investment", 0) or 0)
+        total_buffer = abs(float(summary.get("buffer", 0) or 0))
+        total_all = total_income + total_expense + total_invest + total_buffer or 1
 
-        total_all = total_income + total_expense + total_invest + total_buffer
-        if total_all == 0:
-            total_all = 1
-
-        # Hitung persentase
-        percent_income = (total_income / total_all) * 100
-        percent_expense = (total_expense / total_all) * 100
-        percent_invest = (total_invest / total_all) * 100
-        percent_buffer = (total_buffer / total_all) * 100
-
-        pie_data = [percent_income, percent_expense, percent_invest, percent_buffer]
-        pie_labels = [
-            f"Income {percent_income:.1f}%",
-            f"Expense {percent_expense:.1f}%",
-            f"Invest {percent_invest:.1f}%",
-            f"Buffer {percent_buffer:.1f}%"
+        pie_vals = [
+            (total_income / total_all) * 100,
+            (total_expense / total_all) * 100,
+            (total_invest / total_all) * 100,
+            (total_buffer / total_all) * 100
         ]
+        labels = ["Income", "Expense", "Investment", "Buffer"]
 
-        d = Drawing(250, 160)
+        d = Drawing(260, 160)
         pie = Pie()
         pie.x = 65
         pie.y = 15
         pie.width = 130
         pie.height = 130
-        pie.data = pie_data
-        pie.labels = pie_labels
+        pie.data = pie_vals
+        pie.labels = [f"{lbl} {val:.1f}%" for lbl, val in zip(labels, pie_vals)]
         pie.sideLabels = True
         pie.startAngle = 90
-        pie.slices.strokeWidth = 0.5
+        pie.slices.strokeWidth = 0.3
         pie.slices.strokeColor = colors.white
 
-        # Warna pastel senada
-        pastel_colors = [
+        pastel = [
             colors.HexColor("#A5C8E4"),  # income
             colors.HexColor("#F4C7B8"),  # expense
             colors.HexColor("#B8E4C9"),  # invest
-            colors.HexColor("#EAD1DC")   # buffer
+            colors.HexColor("#EAD1DC"),  # buffer
         ]
-        for i, c in enumerate(pastel_colors):
-            if i < len(pie.slices):
-                pie.slices[i].fillColor = c
+        for i, c in enumerate(pastel):
+            pie.slices[i].fillColor = c
 
         d.add(pie)
         elements.append(d)
-        elements.append(Spacer(1, 18))
-
+        elements.append(Spacer(1, 20))
     except Exception as e:
         print(f"[PDF Chart] Gagal render donut: {e}")
 
-    # --- Ringkasan Keuangan ---
-    elements.append(Paragraph("<b>Ringkasan Keuangan</b>", styles["Heading2"]))
+    # === TABEL RINGKASAN ===
+    elements.append(Paragraph("RINGKASAN KEUANGAN", styles["SubHeader"]))
     summary_table = [
-        ["Income", f"Rp {summary.get('income', 0):,.0f}"],
-        ["Expense", f"Rp {summary.get('expense', 0):,.0f}"],
-        ["Investment", f"Rp {summary.get('investment', 0):,.0f}"],
-        ["Buffer", f"Rp {summary.get('buffer', 0):,.0f}"],  # âœ… Tambahan
+        ["Income", f"Rp {total_income:,.0f}"],
+        ["Expense", f"Rp {total_expense:,.0f}"],
+        ["Investment", f"Rp {total_invest:,.0f}"],
+        ["Buffer", f"Rp {float(summary.get('buffer', 0) or 0):,.0f}"]
     ]
-    t = Table(summary_table, colWidths=[150, 200])
+    t = Table(summary_table, colWidths=[250, 180])
     t.setStyle(TableStyle([
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-        ("BACKGROUND", (0, 0), (-1, 0), colors.whitesmoke),
+        ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#CCCCCC")),
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8F9FA")),
+        ("FONTNAME", (0, 0), (-1, -1), base_font),
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
         ("ALIGN", (1, 0), (-1, -1), "RIGHT")
     ]))
     elements.append(t)
     elements.append(Spacer(1, 18))
 
-    # --- Income ---
+    # === FUNGSI PEMBANGUN TABEL ===
+    def make_table(title, headers, rows, widths):
+        elements.append(Paragraph(title.upper(), styles["SubHeader"]))
+        data = [headers] + rows
+        tbl = Table(data, colWidths=[500 / len(headers)] * len(headers))  # sejajarkan semua tabel
+        tbl.setStyle(TableStyle([
+            ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#D3D3D3")),
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E9ECEF")),
+            ("FONTNAME", (0, 0), (-1, -1), base_font),
+            ("FONTSIZE", (0, 0), (-1, -1), 9),
+            ("ALIGN", (2, 1), (2, -1), "RIGHT"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+        ]))
+        elements.append(tbl)
+        elements.append(Spacer(1, 16))
+
+    # === PENDAPATAN ===
     if entries.get("income"):
-        elements.append(Paragraph("<b>📊 Daftar Pendapatan</b>", styles["Heading2"]))
-        inc_data = [["Tanggal", "Stream", "Jumlah", "Catatan"]]
+        rows = []
         for i in entries["income"]:
-            inc_data.append([
+            rows.append([
                 i.get("date", ""),
                 i.get("stream", ""),
-                f"Rp {i.get('amount', 0):,.0f}",
+                f"Rp {float(i.get('amount', 0) or 0):,.0f}",
                 i.get("note", "")
             ])
-        t = Table(inc_data, colWidths=[80, 150, 100, 150])
-        t.setStyle(TableStyle([("GRID", (0, 0), (-1, -1), 0.5, colors.grey)]))
-        elements.append(t)
-        elements.append(Spacer(1, 12))
+        make_table("Daftar Pendapatan", ["Tanggal", "Stream", "Jumlah", "Catatan"], rows, [90, 160, 100, 80])
 
-    # --- Expense ---
+    # === PENGELUARAN ===
     if entries.get("expense"):
-        elements.append(Paragraph("<b>ðŸ’¸ Daftar Pengeluaran</b>", styles["Heading2"]))
-        exp_data = [["Tanggal", "Kategori", "Jumlah", "Catatan"]]
+        rows = []
         for e in entries["expense"]:
-            exp_data.append([
+            rows.append([
                 e.get("date", ""),
                 e.get("category", ""),
-                f"Rp {e.get('amount', 0):,.0f}",
+                f"Rp {float(e.get('amount', 0) or 0):,.0f}",
                 e.get("note", "")
             ])
-        t = Table(exp_data, colWidths=[80, 150, 100, 150])
-        t.setStyle(TableStyle([("GRID", (0, 0), (-1, -1), 0.5, colors.grey)]))
-        elements.append(t)
-        elements.append(Spacer(1, 12))
+        make_table("Daftar Pengeluaran", ["Tanggal", "Kategori", "Jumlah", "Catatan"], rows, [90, 160, 100, 80])
 
-    # --- Investment ---
+    # === INVESTASI ===
     if entries.get("investment"):
-        elements.append(Paragraph("<b>ðŸ’¼ Daftar Investasi</b>", styles["Heading2"]))
-        inv_data = [["Kategori", "Aset", "Modal (IDR)", "Catatan"]]
+        rows = []
         for inv in entries["investment"]:
-            inv_data.append([
+            rows.append([
                 inv.get("category", ""),
                 inv.get("asset", ""),
-                f"Rp {inv.get('amount_idr', inv.get('amount', 0)):,.0f}",
+                f"Rp {float(inv.get('amount_idr', inv.get('amount', 0) or 0)):,.0f}",
                 inv.get("note", "")
             ])
-        t = Table(inv_data, colWidths=[100, 100, 100, 180])
-        t.setStyle(TableStyle([("GRID", (0, 0), (-1, -1), 0.5, colors.grey)]))
-        elements.append(t)
-        elements.append(Spacer(1, 12))
-    # --- Portfolio Breakdown ---
-    if entries.get("investment"):
-        elements.append(Paragraph("<b>ðŸ“ˆ Portfolio Investasi Lengkap</b>", styles["Heading2"]))
-        detail_data = [["Kategori","Aset","Modal (Rp)","Valuasi","PNL (%)"]]
-        for inv in entries["investment"]:
-            detail_data.append([
-                inv.get("category",""),
-                inv.get("asset",inv.get("type","")),
-                f"Rp {inv.get('amount_idr',0):,.0f}",
-                f"Rp {inv.get('current_value',0):,.0f}" if inv.get("current_value") else "-",
-                f"{inv.get('pnl',0):.2f}%" if inv.get("pnl") else "-"
-            ])
-        t = Table(detail_data, colWidths=[80,120,100,100,60])
-        t.setStyle(TableStyle([("GRID",(0,0),(-1,-1),0.5,colors.grey)]))
-        elements.append(t)
-        elements.append(Spacer(1,12))
+        make_table("Daftar Investasi", ["Kategori", "Aset", "Modal (Rp)", "Catatan"], rows, [110, 110, 100, 90])
+        # === NET WORTH SUMMARY ===
+    try:
+        from networth_integration_v46 import calculate_networth
+        nw_summary = calculate_networth()
 
-    # --- Simpan PDF ke folder user ---
-    pdf_path = os.path.join(get_user_dir(), "reports", f"history_{month}.pdf")
-    os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
+        elements.append(Spacer(1, 20))
+        elements.append(Paragraph("NET WORTH SUMMARY", styles["SubHeader"]))
+        elements.append(Spacer(1, 6))
 
+        data_networth = [
+            ["Investment", f"Rp {nw_summary['investment']:,.0f}"],
+            ["Emergency Fund", f"Rp {nw_summary['emergency']:,.0f}"],
+            ["Buffer (Cash)", f"Rp {nw_summary['buffer']:,.0f}"],
+            ["Total Assets", f"Rp {nw_summary['investment'] + nw_summary['emergency'] + nw_summary['buffer']:,.0f}"],
+            ["Liabilities", f"Rp {nw_summary['liabilities']:,.0f}"],
+            ["Net Worth", f"Rp {nw_summary['net_worth']:,.0f}"],
+        ]
+
+        t_networth = Table(data_networth, colWidths=[220, 180])
+        t_networth.setStyle(TableStyle([
+            ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#CCCCCC")),
+            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8F9FA")),
+            ("FONTNAME", (0, 0), (-1, -1), base_font),
+            ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+            ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ]))
+        elements.append(t_networth)
+
+        # === DETAIL LIABILITIES ===
+        elements.append(Spacer(1, 18))
+        elements.append(Paragraph("LIABILITIES DETAIL", styles["SubHeader"]))
+        elements.append(Spacer(1, 6))
+
+        liabilities = nw_summary.get("liabilities_detail", [])
+
+        if liabilities:
+            liab_data = [["Date", "Category", "Amount", "Remaining", "Progress", "Note"]]
+            for l in liabilities:
+                liab_data.append([
+                    l.get("date", "-"),
+                    l.get("category", "-"),
+                    f"Rp {float(l.get('amount', 0)):,.0f}",
+                    f"Rp {float(l.get('remaining', 0)):,.0f}",
+                    f"{float(l.get('progress', 0)):,.1f}%",
+                    l.get("note", "-")
+                ])
+
+            t_liab = Table(liab_data, colWidths=[65, 70, 70, 70, 50, 100])
+            t_liab.setStyle(TableStyle([
+                ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#DDDDDD")),
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E9ECEF")),
+                ("FONTNAME", (0, 0), (-1, -1), base_font),
+                ("FONTSIZE", (0, 0), (-1, -1), 9),
+                ("ALIGN", (2, 1), (4, -1), "RIGHT"),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ]))
+            elements.append(t_liab)
+        else:
+            elements.append(Paragraph("Tidak ada data liabilitas aktif.", styles["NormalText"]))
+
+    except Exception as e:
+        print("[PDF] Gagal menambahkan Net Worth section:", e)
+
+    # === FOOTER ===
+    elements.append(Spacer(1, 30))
+    elements.append(Paragraph("<i>Generated automatically by Bukabox Financial Dashboard</i>", styles["NormalText"]))
+
+    # === BUILD PDF ===
     try:
         doc.build(elements)
-        print(f"[PDF] Rekap tersimpan: {pdf_path}")
+        print(f"[PDF] Laporan tersimpan: {pdf_path}")
         return send_file(pdf_path, as_attachment=True)
     except Exception as e:
         print(f"[PDF ERROR] Gagal membuat PDF: {e}")

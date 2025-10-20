@@ -1,8 +1,28 @@
 [
-    {
-        "date": "2025-10-19",
-        "stream": "line",
-        "amount": 10000000.0,
-        "note": ""
-    }
+  {
+    "date": "2025-10-20",
+    "stream": "Freelance",
+    "amount": 10000000.0,
+    "note": "Drawing"
+  },
+  {
+    "date": "2025-10-20",
+    "category": "Loan",
+    "amount": 2000000.0,
+    "note": "LN001"
+  },
+  {
+    "date": "2025-10-20",
+    "category": "Loan",
+    "amount": 1000000.0,
+    "note": "LN002",
+    "stream": "BRI"
+  },
+  {
+    "date": "2025-10-20",
+    "category": "Loan",
+    "amount": 1000000.0,
+    "note": "LN003",
+    "stream": "BRI"
+  }
 ]

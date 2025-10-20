@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container networth-page">
+<section class="card">
+  <canvas id="networthTrend"
+  data-labels="{% for h in networth_history %}{{ h.month }}{% if not loop.last %},{% endif %}{% endfor %}"
+  data-values="{% for h in networth_history %}{{ h.net_worth }}{% if not loop.last %},{% endif %}{% endfor %}">
+</canvas>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Bulan</th>
+        <th>Investment</th>
+        <th>Emergency</th>
+        <th>Buffer</th>
+        <th>Liabilities</th>
+        <th>Net Worth</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for h in networth_history %}
+      <tr>
+        <td>{{ h.month }}</td>
+        <td>{{ h.investment | idr }}</td>
+        <td>{{ h.emergency | idr }}</td>
+        <td>{{ h.buffer | idr }}</td>
+        <td>{{ h.liabilities | idr }}</td>
+        <td><b>{{ h.net_worth | idr }}</b></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="card loan-card">
+  <h3>Tambah Liabilities</h3>
+  <form action="/add_liability" method="post">
+    <input type="date" name="date" value="{{ today }}">
+    <input type="text" name="category" placeholder="Kategori">
+    <input type="text" name="name" placeholder="Nama pinjaman (contoh: Modal Freelance)">
+    <input type="text" name="amount" placeholder="Jumlah (Rp)">
+    <input type="text" name="note" placeholder="Catatan">
+    <button type="submit" class="btn btn-primary">Tambah</button>
+  </form>
+  <section class="card" style="margin-top:24px;padding:24px;">
+  <h3 style="font-weight:600;margin-bottom:16px;">Rincian Liabilities</h3>
+
+  {% if networth.liabilities_detail %}
+  <table class="table" style="width:100%;border-collapse:collapse;">
+    <thead style="background:#f8f9fa;">
+      <tr>
+        <th>Tanggal</th>
+        <th>Kategori</th>
+        <th>Jumlah Awal</th>
+        <th>Sisa</th>
+        <th>Progress</th>
+        <th>Catatan</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in networth.liabilities_detail %}
+      <tr>
+        <td>{{ l.date }}</td>
+        <td>{{ l.category }}</td>
+        <td>{{ l.amount | idr }}</td>
+        <td>{{ l.remaining | idr }}</td>
+        <td>
+          <div style="background:#eee;border-radius:10px;overflow:hidden;width:120px;">
+            <div style="background:#4F9EE3;width:{{ l.progress }}%;height:8px;"></div>
+          </div>
+          <small>{{ l.progress }}%</small>
+        </td>
+        <td>{{ l.note }}</td>
+        <td>
+  {% if l.status == 'Lunas' %}
+    <span class="badge green">Lunas</span>
+  {% else %}
+    <span class="badge orange">Berjalan</span>
+  {% endif %}
+</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p>Tidak ada data liabilitas aktif.</p>
+  {% endif %}
+</section>
+
+
+</section>
+</div>
+{% endblock %}

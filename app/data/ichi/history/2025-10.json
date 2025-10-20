@@ -1,129 +1,136 @@
 {
   "month": "2025-10",
-  "timestamp": "2025-10-18",
+  "timestamp": "2025-10-20",
   "summary": {
-    "income": 68578123.0,
-    "expense": 40049393.0,
-    "investment": 22316640.0,
-    "buffer": 6212090.0
+    "income": 14000000.0,
+    "expense": 5000000.0,
+    "investment": 2999999.996,
+    "buffer": 6000000.004000001,
+    "networth": {
+      "investment": 1000000.0,
+      "emergency": 2000000.0,
+      "buffer": 6000000.0,
+      "liabilities": 1000000.0,
+      "liabilities_detail": [
+        {
+          "id": "LN001",
+          "date": "2025-10-20",
+          "category": "Lain",
+          "amount": 2000000.0,
+          "note": "Operasional",
+          "paid": 1000000.0,
+          "remaining": 1000000.0,
+          "progress": 50.0,
+          "status": "Berjalan"
+        },
+        {
+          "id": "LN002",
+          "date": "2025-10-20",
+          "category": "Lain",
+          "name": "BRI",
+          "amount": 1000000.0,
+          "note": "Anak",
+          "status": "Lunas",
+          "paid": 1000000.0,
+          "remaining": 0.0,
+          "progress": 100.0
+        },
+        {
+          "id": "LN003",
+          "date": "2025-10-20",
+          "category": "Lain",
+          "name": "BRI",
+          "amount": 1000000.0,
+          "note": "Operasional",
+          "status": "Lunas",
+          "paid": 1000000.0,
+          "remaining": 0.0,
+          "progress": 100.0
+        }
+      ],
+      "net_worth": 8000000.0
+    }
   },
   "entries": {
     "income": [
       {
-        "date": "2025-10-15",
-        "stream": "LINE",
-        "amount": 68578123.0,
-        "note": "LINE Oct"
+        "date": "2025-10-20",
+        "stream": "Freelance",
+        "amount": 10000000.0,
+        "note": "Drawing"
+      },
+      {
+        "date": "2025-10-20",
+        "category": "Loan",
+        "amount": 2000000.0,
+        "note": "LN001"
+      },
+      {
+        "date": "2025-10-20",
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "LN002",
+        "stream": "BRI"
+      },
+      {
+        "date": "2025-10-20",
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "LN003",
+        "stream": "BRI"
       }
     ],
     "expense": [
       {
-        "date": "2025-10-16",
+        "date": "2025-10-20",
         "type": "expense",
-        "category": "Dana Darurat",
-        "amount": 20000000.0,
-        "note": "Setoran 1"
-      },
-      {
-        "date": "2025-10-16",
-        "type": "expense",
-        "category": "Houshold",
+        "category": "Konsumsi",
         "amount": 1000000.0,
-        "note": "Listrik"
+        "note": "nganu"
       },
       {
-        "date": "2025-10-16",
+        "date": "2025-10-20",
         "type": "expense",
-        "category": "Lain",
-        "amount": 50243.0,
-        "note": "Web Deployer"
-      },
-      {
-        "date": "2025-10-16",
-        "type": "expense",
-        "category": "Investment crypto",
-        "amount": 11999610.0,
-        "note": "DCA"
-      },
-      {
-        "date": "2025-10-16",
-        "type": "expense",
-        "category": "Investment crypto",
-        "amount": 2000179.9999999998,
-        "note": "Operational"
-      },
-      {
-        "date": "2025-10-16",
-        "type": "expense",
-        "category": "Investment crypto",
-        "amount": 999180.0,
-        "note": "Anak"
-      },
-      {
-        "date": "2025-10-16",
-        "type": "expense",
-        "category": "Investment crypto",
-        "amount": 2000179.9999999998,
+        "category": "Loan",
+        "amount": 1000000.0,
         "note": "Operasional"
       },
       {
-        "date": "2025-10-18",
+        "date": "2025-10-20",
         "type": "expense",
-        "category": "Household",
-        "amount": 2000000.0,
-        "note": "Beli galon"
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "LN001"
+      },
+      {
+        "date": "2025-10-20",
+        "type": "expense",
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "LN002"
+      },
+      {
+        "date": "2025-10-20",
+        "type": "expense",
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "LN003"
       }
     ],
     "investment": [
       {
-        "category": "business",
-        "asset": "BUKABOX YT",
-        "sector": "",
-        "date": "2025-10-16",
-        "unit_value": 5317490.0,
-        "entry_amount": 5317490.0,
-        "amount_idr": 5317490.0,
-        "note": "Cicilan Kamera"
+        "category": "Dana Darurat",
+        "asset": "Dana Darurat",
+        "date": "2025-10-20",
+        "amount_idr": 2000000.0,
+        "note": "Setoran 1"
       },
       {
-        "category": "crypto",
-        "date": "2025-10-16",
-        "asset": "BTC",
-        "entry_price": 1890000000.0,
-        "entry_amount": 0.006349,
-        "amount_idr": 11999610.0,
-        "note": "DCA",
-        "timestamp": "2025-10-17T14:07:56.922696"
-      },
-      {
-        "category": "crypto",
-        "date": "2025-10-16",
-        "asset": "BTC",
-        "entry_price": 1820000000.0,
-        "entry_amount": 0.001099,
-        "amount_idr": 2000179.9999999998,
-        "note": "Operational",
-        "timestamp": "2025-10-17T14:08:27.570500"
-      },
-      {
-        "category": "crypto",
-        "date": "2025-10-16",
-        "asset": "BTC",
-        "entry_price": 1820000000.0,
-        "entry_amount": 0.000549,
-        "amount_idr": 999180.0,
-        "note": "Anak",
-        "timestamp": "2025-10-17T14:08:55.314229"
-      },
-      {
-        "category": "crypto",
-        "date": "2025-10-16",
-        "asset": "BTC",
-        "entry_price": 1820000000.0,
-        "entry_amount": 0.001099,
-        "amount_idr": 2000179.9999999998,
-        "note": "Operasional",
-        "timestamp": "2025-10-17T14:09:14.922547"
+        "category": "Investment Crypto",
+        "asset": "ADA",
+        "date": "2025-10-20",
+        "amount_idr": 999999.9959999999,
+        "note": ""
       }
     ]
   }

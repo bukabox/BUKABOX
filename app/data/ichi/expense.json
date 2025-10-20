@@ -1,8 +1,32 @@
 [
     {
-        "date": "2025-10-19",
+        "date": "2025-10-20",
         "category": "Konsumsi",
         "amount": 1000000.0,
-        "note": "Makan"
+        "note": "nganu"
+    },
+    {
+        "date": "2025-10-20",
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "Operasional"
+    },
+    {
+        "date": "2025-10-20",
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "LN001"
+    },
+    {
+        "date": "2025-10-20",
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "LN002"
+    },
+    {
+        "date": "2025-10-20",
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "LN003"
     }
 ]

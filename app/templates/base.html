@@ -15,7 +15,35 @@
 
     <!-- Tombol Burger -->
     <button class="nav-toggle" id="navToggle" aria-label="toggle menu" aria-expanded="false">☰</button>
-
+ <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>BUKABOX</h2>
+      </div>
+      <nav class="menu">
+        <a href="{{ url_for('index') }}" class="menu-item {% if request.endpoint == 'index' %}active{% endif %}">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="{{ url_for('investment_panel') }}" class="menu-item {% if request.endpoint == 'investment_panel' %}active{% endif %}">
+          <i class="fa-solid fa-sack-dollar"></i>
+          <span>Investment</span>
+        </a>
+        <a href="{{ url_for('networth.networth_dashboard') }}" 
+   class="menu-item {% if request.endpoint == 'networth.networth_dashboard' %}active{% endif %}">
+  <i class="fa-solid fa-coins"></i>
+  <span>Net Worth</span>
+</a>
+        <a href="{{ url_for('history_panel') }}" class="menu-item {% if request.endpoint.startswith('history') %}active{% endif %}">
+          <i class="fa-solid fa-calendar-days"></i>
+          <span>History</span>
+        </a>
+        
+      </nav>
+      <div class="sidebar-footer">
+        <small>v4.6</small>
+      </div>
+    </aside>
     <!-- Menu Navigasi -->
     <nav class="nav-menu" id="navMenu">
       {% if not session.get('logged_in') %}
@@ -36,30 +64,7 @@
   </div>
 </header>
 <div class="layout">
-    <!-- ===== SIDEBAR ===== -->
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <h2>BUKABOX</h2>
-      </div>
-      <nav class="menu">
-        <a href="{{ url_for('index') }}" class="menu-item {% if request.endpoint == 'index' %}active{% endif %}">
-          <i class="fa-solid fa-chart-line"></i>
-          <span>Dashboard</span>
-        </a>
-        <a href="{{ url_for('investment_panel') }}" class="menu-item {% if request.endpoint == 'investment_panel' %}active{% endif %}">
-          <i class="fa-solid fa-sack-dollar"></i>
-          <span>Investment</span>
-        </a>
-        <a href="{{ url_for('history_panel') }}" class="menu-item {% if request.endpoint.startswith('history') %}active{% endif %}">
-          <i class="fa-solid fa-calendar-days"></i>
-          <span>History</span>
-        </a>
-        
-      </nav>
-      <div class="sidebar-footer">
-        <small>v4.6</small>
-      </div>
-    </aside>
+   
   <main class="main-content">
     {% block content %}
     {% endblock %}

@@ -1,0 +1,37 @@
+[
+  {
+    "id": "LN001",
+    "date": "2025-10-20",
+    "category": "Lain",
+    "amount": 2000000.0,
+    "note": "Operasional",
+    "paid": 1000000.0,
+    "remaining": 1000000.0,
+    "progress": 50.0,
+    "status": "Berjalan"
+  },
+  {
+    "id": "LN002",
+    "date": "2025-10-20",
+    "category": "Lain",
+    "name": "BRI",
+    "amount": 1000000.0,
+    "note": "Anak",
+    "status": "Lunas",
+    "paid": 1000000.0,
+    "remaining": 0.0,
+    "progress": 100.0
+  },
+  {
+    "id": "LN003",
+    "date": "2025-10-20",
+    "category": "Lain",
+    "name": "BRI",
+    "amount": 1000000.0,
+    "note": "Operasional",
+    "status": "Lunas",
+    "paid": 1000000.0,
+    "remaining": 0.0,
+    "progress": 100.0
+  }
+]

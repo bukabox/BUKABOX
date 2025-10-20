@@ -17,6 +17,27 @@
     </div>
   </div>
 
+<section class="card networth-card">
+  {% if networth %}
+  <div class="summary-box networth">
+    <div class="summ">
+    <h3 class="{% if networth.net_worth < 0 %}negative{% else %}positive{% endif %}">Net Worth:{{ networth.net_worth | idr }}</h3>
+    <p><b>Total Investment:</b> {{ networth.investment | idr }}</p>
+    <p><b>Emergency Fund:</b> {{ networth.emergency | idr }}</p>
+    <p><b>Buffer Balance:</b> {{ networth.buffer | idr }}</p>
+    <p><b>Liabilities:</b> {{ networth.liabilities | idr }}</p>
+    </div>
+    
+  <canvas id="networthChart" height="250"></canvas>
+</div>
+  {% else %}
+  <p style="color:gray;">Data Net Worth belum tersedia.</p>
+  {% endif %}
+  
+
+</section>
+
+
 
 <div id="cardContainer" class="container masonry">
   <div class="col" id="col1"></div>
@@ -73,12 +94,6 @@
     <button onclick="toggleDetail('exp-table-box')">Detail</button>
   </div>
 
-  <!-- 🟢 Tambahan non-destruktif: breakdown internal -->
-  <div class="cash-sub">
-    <p>─ Operasional : <strong>{{ total_expense_operasional|idr }}</strong></p>
-    <p>─ Investment & Savings : <strong>{{ total_investment_savings|idr }}</strong></p>
-  </div>
-
   <div class="summary-box buffer">
     <p>Active Balance :
       <span class="{{ buffer_state }}">
@@ -104,31 +119,70 @@
     <h3>Catat Pengeluaran Baru</h3>
 {% if session.get('logged_in') %}
   <form method="post" action="{{ url_for('add_expense') }}">
-    <div class="grid2">
-      <input type="date" name="date" value="{{ today }}">
-      <div class="category-group">
-  <select id="categorySelect" name="category" required>
-    <optgroup label="Operasional">
-      <option value="Konsumsi">Konsumsi</option>
-      <option value="Household">Household</option>
-      <option value="Tagihan">Tagihan</option>
-      <option value="Kesehatan">Kesehatan</option>
-      <option value="Lain-lain">Lain-lain</option>
-    </optgroup>
-    <optgroup label="Investment & Savings">
-      <option value="Investment crypto">Investment crypto</option>
-      <option value="Dana Darurat">Dana Darurat</option>
-      <option value="Loan">Loan</option>
-      <option value="Paylater">Paylater</option>
-    </optgroup>
-    <option value="_new">+ Tambah kategori baru...</option>
-  </select>
-</div>
-      <input type="text" name="amount" class="money" autocomplete="off" placeholder="Jumlah (IDR)" required>
-      <input type="text" name="note" placeholder="Catatan opsional">
-      <button type="submit">Tambah</button>
+  <div class="grid2">
+    <input type="date" name="date" value="{{ today }}">
+    
+    <div class="category-group">
+      <select id="categorySelect" name="category" required>
+        <optgroup label="Operasional">
+          <option value="Konsumsi">Konsumsi</option>
+          <option value="Household">Household</option>
+          <option value="Kesehatan">Kesehatan</option>
+          <option value="Lain-lain">Lain-lain</option>
+        </optgroup>
+        <optgroup label="Kewajiban">
+          <option value="Loan">Cicilan</option>
+          <option value="Paylater">Paylater</option>
+        </optgroup>
+        <option value="_new">+ Tambah kategori baru...</option>
+      </select>
     </div>
-  </form>
+
+    <input type="text" name="amount" class="money" autocomplete="off" placeholder="Jumlah (IDR)" required>
+
+    <!-- === FIELD CATATAN / PILIHAN LOAN === -->
+    <div id="loanNoteWrapper">
+      <input type="text" id="noteInput" name="note" placeholder="Catatan opsional">
+    </div>
+
+    <button type="submit">Tambah</button>
+  </div>
+</form>
+
+<!-- === SCRIPT PENGENDALI DROPDOWN LOAN === -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const categorySelect = document.getElementById("categorySelect");
+  const noteWrapper = document.getElementById("loanNoteWrapper");
+
+  // daftar loan aktif dari server
+  const activeLoans = {{ liabilities | tojson | safe }};  // <- kirim dari backend
+  const loanOptions = activeLoans.filter(l => l.status !== "Lunas");
+
+  // simpan input manual default
+  const noteInputHTML = `<input type="text" id="noteInput" name="note" placeholder="Catatan opsional">`;
+
+  categorySelect.addEventListener("change", function() {
+    if (this.value === "Loan") {
+      // tampilkan dropdown untuk pilih loan ID
+      if (loanOptions.length > 0) {
+        const selectHTML = `
+          <select id="loanSelect" name="note" required>
+            <option value="">Pilih kode loan...</option>
+            ${loanOptions.map(l => `<option value="${l.id}">${l.id} - ${l.note}</option>`).join("")}
+          </select>`;
+        noteWrapper.innerHTML = selectHTML;
+      } else {
+        noteWrapper.innerHTML = `<input type="text" name="note" placeholder="Tidak ada loan aktif" disabled>`;
+      }
+    } else {
+      // kembali ke input teks biasa
+      noteWrapper.innerHTML = noteInputHTML;
+    }
+  });
+});
+</script>
+
 
   <form action="/cancel_last/expense" method="POST" style="margin-top:8px;">
     <button type="submit" class="cancel-btn">⟲ Batalkan Input Terakhir</button>
@@ -273,10 +327,7 @@
       </table>
     </div>
   </section>
-<div style="position:fixed;top:20px;right:20px;z-index:100;">
-  
-  <a href="{{ url_for('save_month_snapshot') }}" style="background:#92B6E8;color:white;padding:10px 16px;border-radius:6px;text-decoration:none;font-weight:600;box-shadow:0 2px 5px rgba(0,0,0,0.2);">📜 Rekap Bulanan</a>
-</div>
+
 
   <!-- Modal Login -->
   <div id="loginModal" class="modal">

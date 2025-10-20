@@ -401,4 +401,89 @@ if (lineCtx && window.MONTHLY_DATA) {
       }
     });
   }
+// === Net Worth Chart ===
+const networthChart = document.getElementById("networthChart");
+if (networthChart) {
+  fetch("/networth")
+    .then(res => res.json())
+    .then(res => {
+      if (res.status === "success") {
+        const d = res.data;
+        new Chart(networthChart, {
+          type: "doughnut",
+          data: {
+            labels: ["Investment", "Emergency", "Buffer", "Liabilities"],
+            datasets: [{
+              data: [d.investment, d.emergency, d.buffer, d.liabilities],
+              backgroundColor: ["#f0cf4aff", "#f18146ff", "#8fef7aff", "#4ea0cfff"],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            cutout: "70%",
+            plugins: {
+              legend: { position: "bottom" },
+              tooltip: {
+                callbacks: {
+                  label: ctx => `${ctx.label}: Rp ${ctx.raw.toLocaleString("id-ID")}`
+                }
+              }
+            }
+          }
+        });
+      }
+    })
+    .catch(err => console.error("Net Worth chart error:", err));
+}
+// === Net Worth Trend Line Chart ===
+const networthTrend = document.getElementById("networthTrend");
+if (networthTrend) {
+  const labels = networthTrend.dataset.labels ? networthTrend.dataset.labels.split(",") : [];
+  const values = networthTrend.dataset.values ? networthTrend.dataset.values.split(",").map(Number) : [];
+
+  new Chart(networthTrend, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Net Worth",
+        data: values,
+        borderColor: "#6fdc85ff",
+        backgroundColor: "rgba(148, 217, 139, 0.28)",
+        fill: true,
+        tension: 0.35
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true, grid: { color: "#eee" } },
+        x: { grid: { display: false } }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => `Rp ${ctx.parsed.y.toLocaleString("id-ID")}`
+          }
+        }
+      }
+    }
+  });
+}const loanProgress = document.getElementById("loanProgress");
+if (loanProgress) {
+  new Chart(loanProgress, {
+    type: "doughnut",
+    data: {
+      labels: ["Sudah Dibayar", "Sisa"],
+      datasets: [{
+        data: [loanPayments, totalLiabilities - loanPayments],
+        backgroundColor: ["#2a9d8f", "#e9ecef"]
+      }]
+    }
+  });
+}
+
+
 }); // END DOMContentLoaded
