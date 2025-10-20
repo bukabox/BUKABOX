@@ -1,35 +1,47 @@
 [
-  {
-    "date": "2025-10-20",
-    "stream": "Freelance",
-    "amount": 10000000.0,
-    "note": "Drawing"
-  },
-  {
-    "date": "2025-10-20",
-    "category": "Loan",
-    "amount": 2000000.0,
-    "note": "LN001"
-  },
-  {
-    "date": "2025-10-20",
-    "category": "Loan",
-    "amount": 1000000.0,
-    "note": "LN002",
-    "stream": "BRI"
-  },
-  {
-    "date": "2025-10-20",
-    "category": "Loan",
-    "amount": 1000000.0,
-    "note": "LN003",
-    "stream": "BRI"
-  },
-  {
-    "date": "2025-07-20",
-    "category": "Loan",
-    "amount": 50000000.0,
-    "note": "LN004",
-    "stream": "BRI"
-  }
+    {
+        "date": "2025-10-20",
+        "stream": "Freelance",
+        "amount": 10000000.0,
+        "note": "Drawing"
+    },
+    {
+        "date": "2025-10-20",
+        "category": "Loan",
+        "amount": 2000000.0,
+        "note": "LN001"
+    },
+    {
+        "date": "2025-10-20",
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "LN002",
+        "stream": "BRI"
+    },
+    {
+        "date": "2025-10-20",
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "LN003",
+        "stream": "BRI"
+    },
+    {
+        "date": "2025-07-20",
+        "category": "Loan",
+        "amount": 50000000.0,
+        "note": "LN004",
+        "stream": "BRI"
+    },
+    {
+        "date": "2025-09-15",
+        "stream": "LINE",
+        "amount": 58678000.0,
+        "note": "LINE Sep"
+    },
+    {
+        "date": "2025-08-15",
+        "stream": "LINE",
+        "amount": 44867000.0,
+        "note": "LINE Agustus"
+    }
 ]

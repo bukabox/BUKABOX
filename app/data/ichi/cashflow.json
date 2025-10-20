@@ -1,86 +1,100 @@
 [
-  {
-    "date": "2025-10-20",
-    "type": "income",
-    "category": "Freelance",
-    "amount": 10000000.0,
-    "note": "Drawing"
-  },
-  {
-    "date": "2025-10-20",
-    "type": "investment",
-    "category": "Dana Darurat",
-    "amount": 2000000.0,
-    "note": "Setoran 1"
-  },
-  {
-    "date": "2025-10-20",
-    "type": "investment",
-    "category": "Investment Crypto",
-    "amount": 999999.9959999999,
-    "note": ""
-  },
-  {
-    "date": "2025-10-20",
-    "type": "income",
-    "category": "Loan",
-    "amount": 2000000.0,
-    "note": "LN001"
-  },
-  {
-    "date": "2025-10-20",
-    "type": "expense",
-    "category": "Konsumsi",
-    "amount": 1000000.0,
-    "note": "nganu"
-  },
-  {
-    "date": "2025-10-20",
-    "type": "expense",
-    "category": "Loan",
-    "amount": 1000000.0,
-    "note": "Operasional"
-  },
-  {
-    "date": "2025-10-20",
-    "type": "expense",
-    "category": "Loan",
-    "amount": 1000000.0,
-    "note": "LN001"
-  },
-  {
-    "date": "2025-10-20",
-    "type": "income",
-    "category": "Loan",
-    "amount": 1000000.0,
-    "note": "LN002"
-  },
-  {
-    "date": "2025-10-20",
-    "type": "expense",
-    "category": "Loan",
-    "amount": 1000000.0,
-    "note": "LN002"
-  },
-  {
-    "date": "2025-10-20",
-    "type": "income",
-    "category": "Loan",
-    "amount": 1000000.0,
-    "note": "LN003"
-  },
-  {
-    "date": "2025-10-20",
-    "type": "expense",
-    "category": "Loan",
-    "amount": 1000000.0,
-    "note": "LN003"
-  },
-  {
-    "date": "2025-07-20",
-    "type": "income",
-    "category": "Loan",
-    "amount": 50000000.0,
-    "note": "LN004"
-  }
+    {
+        "date": "2025-10-20",
+        "type": "income",
+        "category": "Freelance",
+        "amount": 10000000.0,
+        "note": "Drawing"
+    },
+    {
+        "date": "2025-10-20",
+        "type": "investment",
+        "category": "Dana Darurat",
+        "amount": 2000000.0,
+        "note": "Setoran 1"
+    },
+    {
+        "date": "2025-10-20",
+        "type": "investment",
+        "category": "Investment Crypto",
+        "amount": 999999.9959999999,
+        "note": ""
+    },
+    {
+        "date": "2025-10-20",
+        "type": "income",
+        "category": "Loan",
+        "amount": 2000000.0,
+        "note": "LN001"
+    },
+    {
+        "date": "2025-10-20",
+        "type": "expense",
+        "category": "Konsumsi",
+        "amount": 1000000.0,
+        "note": "nganu"
+    },
+    {
+        "date": "2025-10-20",
+        "type": "expense",
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "Operasional"
+    },
+    {
+        "date": "2025-10-20",
+        "type": "expense",
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "LN001"
+    },
+    {
+        "date": "2025-10-20",
+        "type": "income",
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "LN002"
+    },
+    {
+        "date": "2025-10-20",
+        "type": "expense",
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "LN002"
+    },
+    {
+        "date": "2025-10-20",
+        "type": "income",
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "LN003"
+    },
+    {
+        "date": "2025-10-20",
+        "type": "expense",
+        "category": "Loan",
+        "amount": 1000000.0,
+        "note": "LN003"
+    },
+    {
+        "date": "2025-07-20",
+        "type": "income",
+        "category": "Loan",
+        "amount": 50000000.0,
+        "note": "LN004"
+    },
+    {
+        "date": "2025-09-15",
+        "type": "income",
+        "category": "LINE",
+        "amount": 58678000.0,
+        "note": "LINE Sep"
+    },
+    {
+        "date": "2025-08-15",
+        "type": "income",
+        "category": "LINE",
+        "amount": 44867000.0,
+        "note": "LINE Agustus"
+    }
 ]

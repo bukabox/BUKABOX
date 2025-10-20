@@ -1,7 +1,7 @@
 {
   "investment": 1000000.0,
   "emergency": 2000000.0,
-  "buffer": 56000000.0,
+  "buffer": 159545000.0,
   "liabilities": 51000000.0,
   "liabilities_detail": [
     {
@@ -52,6 +52,6 @@
       "progress": 0.0
     }
   ],
-  "net_worth": 8000000.0,
-  "timestamp": "2025-10-20T12:54:38.367220"
+  "net_worth": 111545000.0,
+  "timestamp": "2025-10-20T13:08:55.990591"
 }

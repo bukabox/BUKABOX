@@ -131,8 +131,21 @@ def fmt_idr(x):
 def jfmt(v):
     return fmt_idr(v)
 
-def same_month(date_str, month):
-    return date_str.startswith(month)
+def same_month(date_str):
+    """Pastikan hanya ambil data bulan aktif (YYYY-MM)"""
+    if not date_str:
+        return False
+    try:
+        for fmt in ("%Y-%m-%d", "%Y-%m", "%d/%m/%Y"):
+            try:
+                d = datetime.datetime.strptime(date_str, fmt)
+                return d.strftime("%Y-%m") == current_month_label()
+            except ValueError:
+                continue
+        return False
+    except Exception:
+        return False
+
 
 import calendar  # tambahkan sekali di bagian import atas
 
@@ -471,8 +484,10 @@ def index():
     gold = get_gold_price()
 
     # === FILTER BULAN AKTIF ===
-    month_income = [i for i in income if same_month(i.get("date", ""), month_now)]
-    month_cashflow = [c for c in cashflow if same_month(c.get("date", ""), month_now)]
+    month_income = [i for i in income if same_month(i.get("date", ""))]
+    month_cashflow = [c for c in cashflow if same_month(c.get("date", ""))]
+
+    month_cashflow.sort(key=lambda x: x.get("date", ""), reverse=True)
 
     # === HITUNG TOTAL ===
     total_income = sum(float(i.get("amount", 0)) for i in month_income)
@@ -1264,13 +1279,20 @@ def save_month_snapshot():
 
     # --- Filter berdasarkan bulan aktif ---
     def same_month(date_str):
+        """Pastikan hanya ambil data bulan aktif (YYYY-MM)"""
         if not date_str:
             return False
         try:
-            d = datetime.datetime.strptime(date_str, "%Y-%m-%d")
-            return d.strftime("%Y-%m") == current_month_label()
-        except ValueError:
+            for fmt in ("%Y-%m-%d", "%Y-%m", "%d/%m/%Y"):
+                try:
+                    d = datetime.datetime.strptime(date_str, fmt)
+                    return d.strftime("%Y-%m") == current_month_label()
+                except ValueError:
+                    continue
             return False
+        except Exception:
+            return False
+
 
     # --- Ambil data bulan ini ---
     month_income = [i for i in income if same_month(i.get("date", ""))]
